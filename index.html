@@ -94,6 +94,14 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
 .mtab{flex:1;padding:13px 7px;min-height:var(--tap-min);background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;text-align:center;transition:all .2s}
 .mtab.active{background:var(--red-bg);border-color:var(--red);color:var(--red)}
 
+.day-tabs{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;height:var(--tap-min)}
+.day-tab{flex:1;background:transparent;border:none;border-radius:7px;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .2s}
+.day-tab.active{background:var(--yellow);color:var(--bg)}
+
+.warn-card{background:var(--red-bg);border:1.5px solid var(--red);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.warn-title{font-size:15px;font-weight:800;color:var(--red);margin-bottom:4px}
+.warn-sub{font-size:13px;color:var(--text2);line-height:1.5}
+
 .checklist-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
 .checklist-row:last-of-type{border-bottom:none}
 .cl-check{width:22px;height:22px;flex-shrink:0;accent-color:var(--yellow);cursor:pointer}
@@ -193,8 +201,19 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
   <!-- Reunión -->
   <div class="card">
     <div class="card-label">🗓️ Tu reunión</div>
-    <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:5px">Hora de la reunión</label>
-    <input type="time" id="hora-reunion" class="finput" style="margin-bottom:10px">
+    <div class="field-row" style="margin-bottom:10px;align-items:stretch">
+      <div class="field-col" style="flex:1.4">
+        <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:5px">Hora de la reunión</label>
+        <input type="time" id="hora-reunion" class="finput" oninput="onHoraReunionChange()">
+      </div>
+      <div class="field-col" style="flex:1">
+        <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:5px">Día</label>
+        <div class="day-tabs">
+          <button class="day-tab active" id="day-hoy" onclick="setDay('hoy')">Hoy</button>
+          <button class="day-tab" id="day-manana" onclick="setDay('manana')">Mañana</button>
+        </div>
+      </div>
+    </div>
     <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:5px">Dirección de la reunión</label>
     <div class="dest-wrap">
       <input type="text" id="destino" class="finput" placeholder="Ej. San Isidro, Av. Javier Prado 123" style="background:none;border:none;padding:12px 0" onblur="checkDestino()">
@@ -232,6 +251,11 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
   <div class="err-msg" id="err-msg"></div>
 
   <div class="results" id="results">
+    <div class="warn-card" id="warn-card" style="display:none">
+      <div class="warn-title">⚠️ No te alcanza el tiempo</div>
+      <div class="warn-sub" id="warn-sub">—</div>
+    </div>
+
     <div class="confirm-card" id="confirm-card" style="display:none">
       <div class="confirm-title" id="confirm-title">🚕 ¿Pides tu taxi / Uber?</div>
       <div class="confirm-stats">
@@ -307,7 +331,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
 <script>
 const SK='apurate_v1';
 const PK='apurate_profile_v1';
-let originMode='gps',mode='taxi';
+let originMode='gps',mode='taxi',meetingDay='hoy';
 let userLat=null,userLon=null,userAddr='';
 let destLat=null,destLon=null,destName='';
 let plan=null; // resultado del último cálculo
@@ -370,11 +394,12 @@ function loadState(){
   document.getElementById('hora-reunion').value=d.horaReunion||'';
   document.getElementById('destino').value=d.destino||'';
   setMode(d.mode||'taxi');
+  setDay(d.meetingDay||'hoy');
   renderChecklist();
 }
 function saveState(){
   try{localStorage.setItem(SK,JSON.stringify({
-    tasks,mode,
+    tasks,mode,meetingDay,
     horaReunion:document.getElementById('hora-reunion').value,
     destino:document.getElementById('destino').value
   }))}catch{}
@@ -450,6 +475,23 @@ function setMode(m){
   document.getElementById('mtab-taxi').classList.toggle('active',m==='taxi');
   document.getElementById('mtab-auto').classList.toggle('active',m==='auto');
   saveState();
+}
+
+// ---------- Día de la reunión (Hoy / Mañana) ----------
+function setDay(d){
+  meetingDay=d;
+  document.getElementById('day-hoy').classList.toggle('active',d==='hoy');
+  document.getElementById('day-manana').classList.toggle('active',d==='manana');
+  saveState();
+}
+// Si escribes una hora que ya pasó hoy, asumimos que es de mañana — pero
+// queda visible y se puede corregir a mano tocando el toggle.
+function onHoraReunionChange(){
+  const val=document.getElementById('hora-reunion').value;
+  if(!val)return;
+  const [h,m]=val.split(':').map(Number);
+  const d=new Date();d.setHours(h,m,0,0);
+  setDay(d<new Date()?'manana':'hoy');
 }
 
 // ---------- Geocoding (Google Places con fallback Nominatim) ----------
@@ -531,7 +573,7 @@ function hav(la1,lo1,la2,lo2){
 function parseMeetingDate(hhmm){
   const [h,m]=hhmm.split(':').map(Number);
   const d=new Date();d.setHours(h,m,0,0);
-  if(d<new Date())d.setDate(d.getDate()+1); // si ya pasó, asumimos mañana
+  if(meetingDay==='manana')d.setDate(d.getDate()+1); // toggle Hoy/Mañana manda, ya no se adivina
   return d;
 }
 function fmt(d){return d.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',hour12:false})}
@@ -592,6 +634,29 @@ async function calcular(){
       origAddr:originMode==='gps'?(userAddr||'mi ubicación'):document.getElementById('origen-manual').value,destAddr:destVal,avisoConfirmado:false};
     notified={prep:false,uber:false,go:false};
     renderPlan();
+
+    // Si ya no alcanza el tiempo (prepStartTime quedó en el pasado), avisar fuerte
+    // arriba de todo — pero seguir mostrando el plan: el taxi hay que pedirlo igual,
+    // solo que ya con menos margen (o ninguno).
+    const now0=new Date();
+    const warn=document.getElementById('warn-card');
+    if(prepStartTime<now0){
+      let msg;
+      if(mode==='taxi'&&now0>=departureTime){
+        msg=`Ya pasó tu hora de salida (${fmt(departureTime)}). Pide tu taxi AHORA MISMO — vas a llegar tarde, avisa en tu reunión.`;
+      } else if(mode==='taxi'&&now0>=taxiRequestTime){
+        msg=`Ya deberías haber pedido el taxi (era a las ${fmt(taxiRequestTime)}). Pídelo ya mismo, olvídate del checklist.`;
+      } else if(mode==='auto'&&now0>=departureTime){
+        msg=`Ya pasó tu hora de salida (${fmt(departureTime)}). Sal ahora mismo — vas a llegar tarde, avisa en tu reunión.`;
+      } else {
+        msg=`Necesitabas empezar a alistarte hace ${humanMin(mins(prepStartTime,now0))} (a las ${fmt(prepStartTime)}). Salta lo que puedas del checklist${mode==='taxi'?' y pide tu taxi apenas estés listo':''}.`;
+      }
+      warn.style.display='block';
+      document.getElementById('warn-sub').textContent=msg;
+    } else {
+      warn.style.display='none';
+    }
+
     document.getElementById('action-row').style.display=mode==='taxi'?'flex':'none';
     const cc=document.getElementById('confirm-card');
     if(mode==='taxi'){
