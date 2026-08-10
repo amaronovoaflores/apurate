@@ -483,9 +483,11 @@ function getDistanceMatrix(oLat,oLon,dLat,dLon,departureDate,trafficModel){
         region:'PE'
       };
       if(departureDate){
+        // google.maps.TrafficModel espera los valores en minúscula tal cual:
+        // 'bestguess' | 'pessimistic' | 'optimistic' (nuestro <select> ya usa esos mismos valores).
         req.drivingOptions={
           departureTime:departureDate,
-          trafficModel:{bestguess:'bestGuess',pessimistic:'pessimistic',optimistic:'optimistic'}[trafficModel]||'bestGuess'
+          trafficModel:['bestguess','pessimistic','optimistic'].includes(trafficModel)?trafficModel:'bestguess'
         };
       }
       svc.getDistanceMatrix(req,(resp,status)=>{
