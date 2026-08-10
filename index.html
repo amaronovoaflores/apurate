@@ -156,9 +156,14 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
 .act-btn.ready{border-color:var(--red);background:var(--red-bg);color:var(--red);animation:pulse-r 1.2s infinite}
 .note{font-size:11.5px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.5}
 
-.confirm-card{background:var(--bg2);border:1.5px dashed var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.confirm-card{background:var(--bg2);border:1.5px dashed var(--red);border-radius:var(--radius);padding:16px;margin-bottom:14px}
 .confirm-card.confirmed{border-style:solid;border-color:var(--green)}
-.confirm-title{font-size:14.5px;font-weight:700;color:var(--text);margin-bottom:3px}
+.confirm-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:12px}
+.confirm-stats{display:flex;gap:10px;margin-bottom:12px}
+.confirm-stat{flex:1;background:var(--bg3);border-radius:var(--radius-sm);padding:12px 8px;text-align:center}
+.confirm-stat-label{font-size:11px;color:var(--text2);margin-bottom:3px}
+.confirm-stat-val{font-size:28px;font-weight:900;color:var(--red);letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.confirm-card.confirmed .confirm-stat-val{color:var(--green)}
 .confirm-sub{font-size:12.5px;color:var(--text2);line-height:1.5;margin-bottom:10px}
 .confirm-btn{width:100%;padding:12px;min-height:44px;background:var(--yellow-bg);border:1px solid var(--yellow);border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:14px;font-weight:700;color:var(--yellow);cursor:pointer}
 .confirm-btn:hover{background:var(--yellow);color:var(--bg)}
@@ -223,18 +228,26 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
     </div>
   </div>
 
-  <!-- Checklist -->
-  <div class="card">
-    <div class="card-label">🧖 Antes de salir <small onclick="resetChecklist()">↺ restaurar</small></div>
-    <div id="checklist"></div>
-    <button class="cl-add" onclick="addTask()">+ Agregar tarea</button>
-    <div class="cl-total">Total: <strong id="cl-total-val">0 min</strong></div>
-  </div>
-
   <button class="calc-btn" id="calc-btn" onclick="calcular()">Calcular →</button>
   <div class="err-msg" id="err-msg"></div>
 
   <div class="results" id="results">
+    <div class="confirm-card" id="confirm-card" style="display:none">
+      <div class="confirm-title" id="confirm-title">🚕 ¿Pides tu taxi / Uber?</div>
+      <div class="confirm-stats">
+        <div class="confirm-stat">
+          <div class="confirm-stat-label">Pídelo a las</div>
+          <div class="confirm-stat-val" id="confirm-pedido">--:--</div>
+        </div>
+        <div class="confirm-stat">
+          <div class="confirm-stat-label">Te recoge a las</div>
+          <div class="confirm-stat-val" id="confirm-llegada">--:--</div>
+        </div>
+      </div>
+      <div class="confirm-sub" id="confirm-sub">—</div>
+      <button class="confirm-btn" id="confirm-btn" onclick="confirmarAviso()">Sí, avísame</button>
+    </div>
+
     <div class="status-banner" id="status-banner">
       <div class="status-tag" id="status-tag">—</div>
       <div class="status-title" id="status-title">—</div>
@@ -242,12 +255,6 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
     </div>
 
     <div class="timeline" id="timeline"></div>
-
-    <div class="confirm-card" id="confirm-card" style="display:none">
-      <div class="confirm-title" id="confirm-title">🚕 ¿Te aviso para pedir tu taxi justo a tiempo?</div>
-      <div class="confirm-sub" id="confirm-sub">—</div>
-      <button class="confirm-btn" id="confirm-btn" onclick="confirmarAviso()">Sí, avísame</button>
-    </div>
 
     <div class="action-row" id="action-row">
       <button class="act-btn" id="btn-uber" onclick="lanzarUber()">🚗 Pedir Uber</button>
@@ -281,6 +288,15 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
       <option value="pessimistic">Pesimista</option>
       <option value="optimistic">Optimista</option>
     </select>
+
+    <label style="margin-top:18px;display:flex;align-items:center;justify-content:space-between">
+      <span>🧖 Antes de salir</span>
+      <small style="font-weight:600;color:var(--text3);cursor:pointer;text-transform:none;letter-spacing:0" onclick="resetChecklist()">↺ restaurar</small>
+    </label>
+    <div id="checklist"></div>
+    <button class="cl-add" onclick="addTask()">+ Agregar tarea</button>
+    <div class="cl-total">Total: <strong id="cl-total-val">0 min</strong></div>
+
     <button class="calc-btn" style="margin-top:16px" onclick="saveProfile()">Guardar</button>
     <button class="modal-close" id="profile-close-btn" onclick="closeProfile()">Cerrar</button>
   </div>
@@ -580,8 +596,10 @@ async function calcular(){
     const cc=document.getElementById('confirm-card');
     if(mode==='taxi'){
       cc.style.display='block';cc.className='confirm-card';
-      document.getElementById('confirm-title').textContent='🚕 ¿Te aviso para pedir tu taxi justo a tiempo?';
-      document.getElementById('confirm-sub').textContent=`Considerando tráfico y ~${esperaTaxiMin} min de espera del taxi, deberías pedirlo a las ${fmt(taxiRequestTime)} para llegar 👉 a las ${fmt(arrivalTime)} (${bufferMin} min antes de tu reunión).`;
+      document.getElementById('confirm-title').textContent='🚕 ¿Pides tu taxi / Uber?';
+      document.getElementById('confirm-pedido').textContent=fmt(taxiRequestTime);
+      document.getElementById('confirm-llegada').textContent=fmt(departureTime);
+      document.getElementById('confirm-sub').textContent=`Considerando tráfico y ~${esperaTaxiMin} min de espera, así llegas a las ${fmt(arrivalTime)} (${bufferMin} min antes de tu reunión).`;
       document.getElementById('confirm-btn').style.display='block';
       document.getElementById('confirm-btn').textContent='Sí, avísame';
     } else {
@@ -603,7 +621,7 @@ function confirmarAviso(){
   const cc=document.getElementById('confirm-card');
   cc.classList.add('confirmed');
   document.getElementById('confirm-title').textContent='✅ Listo, te aviso a tiempo';
-  document.getElementById('confirm-sub').innerHTML=`Te voy a avisar (notificación + vibración) exactamente a las <strong>${fmt(plan.taxiRequestTime)}</strong> para que pidas el taxi tú mismo — no puedo pedirlo en automático por ti (Uber no ofrece reserva por link externo), pero si dejas la app abierta te aviso en el segundo justo.`;
+  document.getElementById('confirm-sub').innerHTML=`Te voy a avisar (notificación + vibración) en el segundo justo para que pidas el taxi tú mismo — no puedo pedirlo en automático por ti (Uber no ofrece reserva por link externo).`;
   document.getElementById('confirm-btn').style.display='none';
 }
 
