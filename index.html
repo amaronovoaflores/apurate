@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0B0B14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="APURATE!">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<title>APURATE! · A qué hora alistarte</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBjOBgEngBzLZh1yiF1bkq4C-KtdiILHCI&libraries=places"></script>
+<style>
+:root{
+  --bg:#0B0B14;
+  --bg2:#17171F;
+  --bg3:#1F1F2B;
+  --border:#2E2E40;
+  --text:#F5F5FF;
+  --text2:#B4B4D4;
+  --text3:#8C8CB0;
+  --yellow:#F5C842;
+  --green:#4ADE80;
+  --blue:#38BDF8;
+  --red:#F87171;
+  --purple:#B794F6;
+  --yellow-bg:rgba(245,200,66,0.10);
+  --green-bg:rgba(74,222,128,0.10);
+  --blue-bg:rgba(56,189,248,0.10);
+  --red-bg:rgba(248,113,113,0.10);
+  --radius:14px;
+  --radius-sm:9px;
+  --tap-min:48px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+.app{max-width:420px;margin:0 auto;padding:16px 14px 60px;width:100%}
+
+.app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.app-header-l{display:flex;align-items:center;gap:10px}
+.app-icon{width:34px;height:34px;background:var(--red-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.app-title{font-size:17px;font-weight:900;letter-spacing:-.01em;color:var(--text)}
+.app-sub{font-size:11px;color:var(--text3);margin-top:-1px}
+.clock-chip{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--text2);font-variant-numeric:tabular-nums}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px}
+.card-label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:6px;justify-content:space-between}
+.card-label small{font-weight:600;text-transform:none;letter-spacing:0;color:var(--text3);cursor:pointer}
+
+.field-row{display:flex;gap:8px}
+.field-col{flex:1;min-width:0}
+.field-col label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px}
+.finput{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'Inter',sans-serif;font-size:16px;font-weight:600;padding:12px 12px;min-height:var(--tap-min);transition:border-color .2s}
+.finput:focus{outline:none;border-color:var(--yellow)}
+.finput::placeholder{color:var(--text3);font-weight:400}
+
+.dest-wrap{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:2px 12px}
+.dest-wrap:focus-within{border-color:var(--yellow)}
+.dest-wrap input{flex:1;background:none;border:none;color:var(--text);font-family:'Inter',sans-serif;font-size:16px;font-weight:600;padding:12px 0;min-width:0}
+.dest-wrap input:focus{outline:none}
+.fdot{width:9px;height:9px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.fdot.ok{background:var(--green);box-shadow:0 0 0 4px var(--green-bg)}
+.fdot.loading{background:var(--yellow);box-shadow:0 0 0 4px var(--yellow-bg);animation:blink 1s infinite}
+.fdot.error{background:var(--red);box-shadow:0 0 0 4px var(--red-bg)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+.origin-tabs{display:flex;gap:6px;margin-bottom:10px}
+.otab{flex:1;padding:11px 7px;min-height:44px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;text-align:center;transition:all .2s}
+.otab.active{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+.gps-block{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;display:flex;align-items:center;gap:10px}
+.gps-text{flex:1;min-width:0}
+.gps-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gps-sub{font-size:11.5px;color:var(--text3);margin-top:1px}
+.retry-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:8px 10px;min-height:38px;font-size:12px;color:var(--text2);cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif}
+
+details.settings{margin-bottom:12px}
+details.settings summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);padding:2px 2px 0}
+details.settings summary::-webkit-details-marker{display:none}
+details.settings summary .arrow{transition:transform .2s;color:var(--text3)}
+details.settings[open] summary .arrow{transform:rotate(180deg)}
+.settings-body{padding-top:12px}
+
+.checklist-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.checklist-row:last-of-type{border-bottom:none}
+.cl-check{width:22px;height:22px;flex-shrink:0;accent-color:var(--yellow);cursor:pointer}
+.cl-name{flex:1;background:none;border:none;color:var(--text);font-family:'Inter',sans-serif;font-size:14.5px;font-weight:600;padding:4px 0;min-width:0}
+.cl-name:focus{outline:none}
+.cl-min{width:46px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;font-weight:700;padding:6px 4px;text-align:center}
+.cl-min:focus{outline:none;border-color:var(--yellow)}
+.cl-unit{font-size:11.5px;color:var(--text3);width:22px}
+.cl-del{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px;flex-shrink:0}
+.cl-del:hover{color:var(--red)}
+.cl-add{width:100%;margin-top:10px;background:var(--bg3);border:1px dashed var(--border);border-radius:var(--radius-sm);padding:10px;min-height:40px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer}
+.cl-add:hover{border-color:var(--yellow);color:var(--yellow)}
+.cl-total{margin-top:10px;font-size:13px;color:var(--text2);text-align:right}
+.cl-total strong{color:var(--yellow);font-size:15px}
+
+.calc-btn{width:100%;padding:16px;min-height:52px;background:linear-gradient(180deg,#FB8E8E,var(--red));border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:18px;font-weight:800;color:#fff;cursor:pointer;letter-spacing:-.2px;transition:all .2s;margin-top:2px;box-shadow:0 6px 18px rgba(248,113,113,.25)}
+.calc-btn:active{transform:scale(.98)}
+.calc-btn:disabled{background:var(--bg3);color:var(--text2);cursor:not-allowed;box-shadow:none}
+
+.err-msg{background:var(--red-bg);border:1px solid var(--red);border-radius:var(--radius-sm);padding:12px 14px;font-size:14.5px;color:var(--red);margin-top:10px;display:none}
+
+.results{display:none;margin-top:16px}
+.results.show{display:block}
+
+.status-banner{border-radius:16px;padding:18px;margin-bottom:14px;border:1.5px solid var(--border);transition:all .3s}
+.status-banner.st-wait{background:linear-gradient(135deg,rgba(56,189,248,.13) 0%,rgba(56,189,248,.04) 100%);border-color:var(--blue)}
+.status-banner.st-prep{background:linear-gradient(135deg,rgba(245,200,66,.16) 0%,rgba(245,200,66,.05) 100%);border-color:var(--yellow);animation:pulse-y 1.6s infinite}
+.status-banner.st-uber{background:linear-gradient(135deg,rgba(248,113,113,.18) 0%,rgba(248,113,113,.06) 100%);border-color:var(--red);animation:pulse-r 1.2s infinite}
+.status-banner.st-go{background:linear-gradient(135deg,rgba(248,113,113,.18) 0%,rgba(248,113,113,.06) 100%);border-color:var(--red);animation:pulse-r 1.2s infinite}
+.status-banner.st-road{background:linear-gradient(135deg,rgba(74,222,128,.14) 0%,rgba(74,222,128,.04) 100%);border-color:var(--green)}
+.status-banner.st-done{background:linear-gradient(135deg,rgba(74,222,128,.14) 0%,rgba(74,222,128,.04) 100%);border-color:var(--green)}
+@keyframes pulse-y{0%,100%{box-shadow:0 0 0 0 rgba(245,200,66,.35)}50%{box-shadow:0 0 0 10px rgba(245,200,66,0)}}
+@keyframes pulse-r{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.4)}50%{box-shadow:0 0 0 12px rgba(248,113,113,0)}}
+.status-tag{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.st-wait .status-tag{color:var(--blue)}
+.st-prep .status-tag{color:var(--yellow)}
+.st-uber .status-tag,.st-go .status-tag{color:var(--red)}
+.st-road .status-tag,.st-done .status-tag{color:var(--green)}
+.status-title{font-size:26px;font-weight:900;color:var(--text);letter-spacing:-.8px;line-height:1.15;margin-bottom:4px}
+.status-detail{font-size:14px;color:var(--text2);line-height:1.5}
+
+.timeline{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:6px 16px;margin-bottom:14px}
+.tl-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);position:relative}
+.tl-row:last-child{border-bottom:none}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.tl-icon{font-size:18px;width:22px;text-align:center;flex-shrink:0}
+.tl-text{flex:1;min-width:0}
+.tl-label{font-size:13.5px;font-weight:600;color:var(--text)}
+.tl-sub{font-size:11.5px;color:var(--text3);margin-top:1px}
+.tl-time{font-size:16px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;flex-shrink:0}
+.tl-row.tl-highlight .tl-time{color:var(--yellow);font-size:19px}
+.tl-row.tl-past{opacity:.4}
+
+.traffic-badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:20px;margin-top:8px}
+.traffic-badge.live{background:var(--green-bg);color:var(--green)}
+.traffic-badge.scheduled{background:var(--blue-bg);color:var(--blue)}
+
+.action-row{display:flex;gap:8px;margin-bottom:8px}
+.act-btn{flex:1;padding:14px 6px;min-height:52px;border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:15px;font-weight:800;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text);display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s}
+.act-btn.ready{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.note{font-size:11.5px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="app-header">
+    <div class="app-header-l">
+      <div class="app-icon">⏰</div>
+      <div>
+        <div class="app-title">APURATE!</div>
+        <div class="app-sub">¿A qué hora me alisto?</div>
+      </div>
+    </div>
+    <div class="clock-chip" id="live-clock">--:--</div>
+  </div>
+
+  <!-- Reunión -->
+  <div class="card">
+    <div class="card-label">🗓️ Tu reunión</div>
+    <div class="field-row" style="margin-bottom:10px">
+      <div class="field-col">
+        <label>Hora de la reunión</label>
+        <input type="time" id="hora-reunion" class="finput">
+      </div>
+      <div class="field-col">
+        <label>Llegar con (min)</label>
+        <input type="number" id="buffer-llegada" class="finput" value="10" min="0" max="60">
+      </div>
+    </div>
+    <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:5px">Dirección de la reunión</label>
+    <div class="dest-wrap">
+      <input type="text" id="destino" class="finput" placeholder="Ej. San Isidro, Av. Javier Prado 123" style="background:none;border:none;padding:12px 0" onblur="checkDestino()">
+      <span class="fdot" id="dest-dot"></span>
+    </div>
+  </div>
+
+  <!-- Origen -->
+  <div class="card">
+    <div class="card-label">📍 Sales desde</div>
+    <div class="origin-tabs">
+      <button class="otab active" id="otab-gps" onclick="setOrigin('gps')">📡 Mi ubicación</button>
+      <button class="otab" id="otab-manual" onclick="setOrigin('manual')">✏️ Escribir</button>
+    </div>
+    <div id="gps-block" class="gps-block">
+      <div class="gps-text">
+        <div class="gps-name" id="loc-name">Obteniendo ubicación...</div>
+        <div class="gps-sub" id="loc-sub"></div>
+      </div>
+      <button class="retry-btn" id="loc-retry" style="display:none" onclick="geolocate()">↺ Reintentar</button>
+    </div>
+    <input type="text" id="origen-manual" class="finput" placeholder="Ej. Miraflores, Av. Larco 456" style="display:none">
+  </div>
+
+  <!-- Ajustes -->
+  <details class="settings">
+    <summary>⚙️ Ajustes finos <span class="arrow">▾</span></summary>
+    <div class="settings-body">
+      <div class="card" style="margin-bottom:0">
+        <div class="field-row">
+          <div class="field-col">
+            <label>Espera del Uber (min)</label>
+            <input type="number" id="espera-uber" class="finput" value="5" min="0" max="30">
+          </div>
+          <div class="field-col">
+            <label>Modelo de tráfico</label>
+            <select id="traffic-model" class="finput">
+              <option value="bestguess" selected>Normal</option>
+              <option value="pessimistic">Pesimista</option>
+              <option value="optimistic">Optimista</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- Checklist -->
+  <div class="card">
+    <div class="card-label">🧖 Antes de salir <small onclick="resetChecklist()">↺ restaurar</small></div>
+    <div id="checklist"></div>
+    <button class="cl-add" onclick="addTask()">+ Agregar tarea</button>
+    <div class="cl-total">Total: <strong id="cl-total-val">0 min</strong></div>
+  </div>
+
+  <button class="calc-btn" id="calc-btn" onclick="calcular()">Calcular →</button>
+  <div class="err-msg" id="err-msg"></div>
+
+  <div class="results" id="results">
+    <div class="status-banner" id="status-banner">
+      <div class="status-tag" id="status-tag">—</div>
+      <div class="status-title" id="status-title">—</div>
+      <div class="status-detail" id="status-detail">—</div>
+    </div>
+
+    <div class="timeline" id="timeline"></div>
+
+    <div class="action-row">
+      <button class="act-btn" id="btn-uber" onclick="lanzarUber()">🚗 Pedir Uber</button>
+      <button class="act-btn" id="btn-cabify" onclick="lanzarCabify()">🟡 Pedir Cabify</button>
+    </div>
+    <p class="note">Los horarios se recalculan con tráfico en vivo (o estimado, si la reunión es más tarde). Vuelve a tocar "Calcular" si cambias algo.</p>
+  </div>
+
+</div>
+
+<script>
+const SK='apurate_v1';
+let originMode='gps';
+let userLat=null,userLon=null,userAddr='';
+let destLat=null,destLon=null,destName='';
+let plan=null; // resultado del último cálculo
+let tickTimer=null;
+let notified={prep:false,uber:false,go:false};
+
+const DEFAULT_TASKS=[
+  {name:'Ducharme',min:15},
+  {name:'Vestirme',min:10},
+  {name:'Peinarme / maquillarme',min:15},
+  {name:'Desayunar',min:10},
+  {name:'Últimos detalles (llaves, cartera...)',min:5}
+];
+let tasks=[];
+
+// ---------- Persistencia ----------
+function loadState(){
+  let d={};
+  try{d=JSON.parse(localStorage.getItem(SK)||'{}')}catch{}
+  tasks=Array.isArray(d.tasks)&&d.tasks.length?d.tasks:DEFAULT_TASKS.map(t=>({...t,on:true}));
+  tasks.forEach(t=>{if(t.on===undefined)t.on=true});
+  document.getElementById('hora-reunion').value=d.horaReunion||'';
+  document.getElementById('destino').value=d.destino||'';
+  document.getElementById('buffer-llegada').value=d.buffer??10;
+  document.getElementById('espera-uber').value=d.esperaUber??5;
+  document.getElementById('traffic-model').value=d.trafficModel||'bestguess';
+  renderChecklist();
+}
+function saveState(){
+  try{localStorage.setItem(SK,JSON.stringify({
+    tasks,
+    horaReunion:document.getElementById('hora-reunion').value,
+    destino:document.getElementById('destino').value,
+    buffer:document.getElementById('buffer-llegada').value,
+    esperaUber:document.getElementById('espera-uber').value,
+    trafficModel:document.getElementById('traffic-model').value
+  }))}catch{}
+}
+function resetChecklist(){
+  tasks=DEFAULT_TASKS.map(t=>({...t,on:true}));
+  renderChecklist();saveState();
+}
+
+// ---------- Checklist UI ----------
+function renderChecklist(){
+  const box=document.getElementById('checklist');
+  box.innerHTML=tasks.map((t,i)=>`
+    <div class="checklist-row">
+      <input type="checkbox" class="cl-check" ${t.on?'checked':''} onchange="toggleTask(${i},this.checked)">
+      <input type="text" class="cl-name" value="${escAttr(t.name)}" onchange="renameTask(${i},this.value)">
+      <input type="number" class="cl-min" value="${t.min}" min="0" max="180" onchange="setTaskMin(${i},this.value)">
+      <span class="cl-unit">min</span>
+      <button class="cl-del" onclick="delTask(${i})">✕</button>
+    </div>`).join('');
+  updateTotal();
+}
+function escAttr(s){return String(s).replace(/"/g,'&quot;')}
+function toggleTask(i,v){tasks[i].on=v;updateTotal();saveState()}
+function renameTask(i,v){tasks[i].name=v.trim()||tasks[i].name;saveState()}
+function setTaskMin(i,v){tasks[i].min=Math.max(0,parseInt(v)||0);updateTotal();saveState()}
+function delTask(i){tasks.splice(i,1);renderChecklist();saveState()}
+function addTask(){tasks.push({name:'Nueva tarea',min:5,on:true});renderChecklist();saveState()}
+function updateTotal(){
+  const t=tasks.filter(x=>x.on).reduce((s,x)=>s+x.min,0);
+  document.getElementById('cl-total-val').textContent=t+' min';
+}
+function totalPrepMin(){return tasks.filter(x=>x.on).reduce((s,x)=>s+x.min,0)}
+
+// ---------- Origen ----------
+function setOrigin(m){
+  originMode=m;
+  document.getElementById('otab-gps').classList.toggle('active',m==='gps');
+  document.getElementById('otab-manual').classList.toggle('active',m==='manual');
+  document.getElementById('gps-block').style.display=m==='gps'?'flex':'none';
+  document.getElementById('origen-manual').style.display=m==='manual'?'block':'none';
+  if(m==='manual')document.getElementById('origen-manual').focus();
+  if(m==='gps'&&userLat===null)geolocate();
+}
+function geolocate(){
+  const dot=null,nm=document.getElementById('loc-name'),sub=document.getElementById('loc-sub'),retry=document.getElementById('loc-retry');
+  nm.textContent='Obteniendo ubicación...';retry.style.display='none';
+  if(!navigator.geolocation){setGeoError();return}
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    userLat=pos.coords.latitude;userLon=pos.coords.longitude;nm.textContent='Identificando...';
+    try{
+      const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json`,{headers:{'User-Agent':'Apurate/1.0'}});
+      const d=await r.json(),a=d.address;
+      const barrio=a.neighbourhood||a.suburb||a.city_district||'';
+      const dist=a.city||a.town||'Lima';
+      userAddr=barrio?`${barrio}, ${dist}`:dist;
+      nm.textContent=userAddr;sub.textContent=`${userLat.toFixed(4)}, ${userLon.toFixed(4)}`;
+    }catch{userAddr=`${userLat.toFixed(4)}, ${userLon.toFixed(4)}`;nm.textContent=userAddr}
+  },err=>{
+    const msgs={1:'Permiso denegado — actívalo en ajustes',2:'No se pudo obtener GPS',3:'Tiempo agotado'};
+    setGeoError(msgs[err.code]||'Error de GPS');
+  },{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+}
+function setGeoError(msg){
+  document.getElementById('loc-name').textContent=msg||'GPS no disponible';
+  document.getElementById('loc-sub').textContent='Toca ↺ o cambia a "Escribir"';
+  document.getElementById('loc-retry').style.display='block';
+}
+
+// ---------- Geocoding (Google Places con fallback Nominatim) ----------
+// Si la API key de Google falla o no responde (dominio no autorizado, cuota, red),
+// el callback de PlacesService puede no dispararse nunca — por eso corre contra un timeout.
+function nominatimGeo(place){
+  return fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(place+', Lima, Peru')}&format=json&limit=1`,{headers:{'User-Agent':'Apurate/1.0'}})
+    .then(r=>r.json())
+    .then(d=>{
+      if(!d.length)throw new Error(`No encontrado: "${place}"`);
+      return {lat:parseFloat(d[0].lat),lon:parseFloat(d[0].lon),name:place};
+    });
+}
+function geo(place){
+  const viaPlaces=new Promise((resolve,reject)=>{
+    try{
+      const svc=new google.maps.places.PlacesService(document.createElement('div'));
+      svc.findPlaceFromQuery({query:place+', Lima, Peru',fields:['geometry','name']},(results,status)=>{
+        if(status===google.maps.places.PlacesServiceStatus.OK&&results[0]){
+          const loc=results[0].geometry.location;
+          resolve({lat:loc.lat(),lon:loc.lng(),name:results[0].name});
+        } else reject(new Error('places-status:'+status));
+      });
+    }catch(e){reject(e)}
+  });
+  const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('places-timeout')),4000));
+  return Promise.race([viaPlaces,timeout]).catch(()=>nominatimGeo(place));
+}
+async function checkDestino(){
+  const val=document.getElementById('destino').value.trim();
+  const dot=document.getElementById('dest-dot');
+  if(!val){dot.className='fdot';return}
+  dot.className='fdot loading';
+  try{const r=await geo(val);destLat=r.lat;destLon=r.lon;destName=r.name;dot.className='fdot ok'}
+  catch{dot.className='fdot error'}
+}
+
+// ---------- Distance Matrix (con tráfico) ----------
+function getDistanceMatrix(oLat,oLon,dLat,dLon,departureDate,trafficModel){
+  const viaGoogle=new Promise((resolve,reject)=>{
+    try{
+      const svc=new google.maps.DistanceMatrixService();
+      const req={
+        origins:[new google.maps.LatLng(oLat,oLon)],
+        destinations:[new google.maps.LatLng(dLat,dLon)],
+        travelMode:google.maps.TravelMode.DRIVING,
+        region:'PE'
+      };
+      if(departureDate){
+        req.drivingOptions={
+          departureTime:departureDate,
+          trafficModel:{bestguess:'bestGuess',pessimistic:'pessimistic',optimistic:'optimistic'}[trafficModel]||'bestGuess'
+        };
+      }
+      svc.getDistanceMatrix(req,(resp,status)=>{
+        if(status==='OK'&&resp.rows[0].elements[0].status==='OK'){
+          const el=resp.rows[0].elements[0];
+          resolve({
+            distKm: el.distance.value/1000,
+            durMin: Math.round((el.duration_in_traffic||el.duration).value/60),
+            hasTraffic: !!el.duration_in_traffic
+          });
+        } else reject(new Error('matrix-status:'+status));
+      });
+    }catch(e){reject(e)}
+  });
+  const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('matrix-timeout')),4000));
+  return Promise.race([viaGoogle,timeout]).catch(()=>null);
+}
+function hav(la1,lo1,la2,lo2){
+  const R=6371,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180;
+  const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// ---------- Cálculo principal (planificación hacia atrás) ----------
+function parseMeetingDate(hhmm){
+  const [h,m]=hhmm.split(':').map(Number);
+  const d=new Date();d.setHours(h,m,0,0);
+  if(d<new Date())d.setDate(d.getDate()+1); // si ya pasó, asumimos mañana
+  return d;
+}
+function fmt(d){return d.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',hour12:false})}
+function addMin(d,min){return new Date(d.getTime()+min*60000)}
+
+async function calcular(){
+  const err=document.getElementById('err-msg');err.style.display='none';
+  const btn=document.getElementById('calc-btn');btn.textContent='Calculando...';btn.disabled=true;
+  try{
+    const horaVal=document.getElementById('hora-reunion').value;
+    if(!horaVal)throw new Error('Indica la hora de la reunión.');
+    const destVal=document.getElementById('destino').value.trim();
+    if(!destVal)throw new Error('Escribe la dirección de la reunión.');
+    if(totalPrepMin()===0)throw new Error('Activa al menos una tarea en tu checklist.');
+
+    // Origen
+    let oLat,oLon;
+    if(originMode==='gps'){
+      if(userLat===null)throw new Error('GPS no disponible. Cambia a "Escribir".');
+      oLat=userLat;oLon=userLon;
+    } else {
+      const t=document.getElementById('origen-manual').value.trim();
+      if(!t)throw new Error('Escribe tu punto de partida.');
+      const o=await geo(t);oLat=o.lat;oLon=o.lon;
+    }
+    // Destino
+    if(destLat===null||destName!==destVal){const d=await geo(destVal);destLat=d.lat;destLon=d.lon;destName=destVal}
+
+    const meetingTime=parseMeetingDate(horaVal);
+    const bufferMin=Math.max(0,parseInt(document.getElementById('buffer-llegada').value)||0);
+    const esperaUberMin=Math.max(0,parseInt(document.getElementById('espera-uber').value)||0);
+    const trafficModel=document.getElementById('traffic-model').value;
+    const arrivalTime=addMin(meetingTime,-bufferMin);
+
+    // Paso 1: duración base (sin tráfico) para estimar hora de salida aproximada
+    let matrix=await getDistanceMatrix(oLat,oLon,destLat,destLon,null,null);
+    let durMin,distKm,hasTraffic=false;
+    if(matrix){
+      durMin=matrix.durMin;distKm=matrix.distKm;
+      // Paso 2: refinar con tráfico previsto para la hora de salida estimada
+      const guessDeparture=addMin(arrivalTime,-durMin);
+      const departureForQuery=guessDeparture<new Date()?new Date():guessDeparture;
+      const matrix2=await getDistanceMatrix(oLat,oLon,destLat,destLon,departureForQuery,trafficModel);
+      if(matrix2){durMin=matrix2.durMin;distKm=matrix2.distKm;hasTraffic=matrix2.hasTraffic}
+    } else {
+      distKm=hav(oLat,oLon,destLat,destLon)*1.35;
+      durMin=Math.round(distKm/0.33);
+    }
+
+    const departureTime=addMin(arrivalTime,-durMin);
+    const uberRequestTime=addMin(departureTime,-esperaUberMin);
+    const prepStartTime=addMin(uberRequestTime,-totalPrepMin());
+
+    plan={meetingTime,arrivalTime,departureTime,uberRequestTime,prepStartTime,durMin,distKm,hasTraffic,bufferMin,esperaUberMin,origAddr:originMode==='gps'?(userAddr||'mi ubicación'):document.getElementById('origen-manual').value,destAddr:destVal};
+    notified={prep:false,uber:false,go:false};
+    renderPlan();
+    document.getElementById('results').classList.add('show');
+    document.getElementById('results').scrollIntoView({behavior:'smooth',block:'nearest'});
+    saveState();
+    if(!tickTimer)tickTimer=setInterval(tick,1000);
+    tick();
+    if('Notification' in window && Notification.permission==='default')Notification.requestPermission();
+  }catch(e){err.textContent=e.message;err.style.display='block'}
+  finally{btn.textContent='Calcular →';btn.disabled=false}
+}
+
+function renderPlan(){
+  if(!plan)return;
+  const rows=[
+    {icon:'🧖',label:'Empieza a alistarte',time:plan.prepStartTime,sub:`${totalPrepMin()} min de tareas`,highlight:true},
+    {icon:'🚗',label:'Pide tu Uber / Cabify',time:plan.uberRequestTime,sub:`Llega en ~${plan.esperaUberMin} min`},
+    {icon:'🚪',label:'Sales de casa',time:plan.departureTime,sub:`Viaje: ${plan.durMin} min · ${plan.distKm.toFixed(1)} km`},
+    {icon:'📍',label:'Llegas',time:plan.arrivalTime,sub:`${plan.bufferMin} min antes de la reunión`},
+    {icon:'🗓️',label:'Reunión',time:plan.meetingTime,sub:plan.destAddr}
+  ];
+  document.getElementById('timeline').innerHTML=rows.map(r=>`
+    <div class="tl-row ${r.highlight?'tl-highlight':''}">
+      <span class="tl-icon">${r.icon}</span>
+      <div class="tl-text">
+        <div class="tl-label">${r.label}</div>
+        <div class="tl-sub">${r.sub}</div>
+      </div>
+      <div class="tl-time">${fmt(r.time)}</div>
+    </div>`).join('')+
+    `<div style="padding:8px 0 4px">
+      <span class="traffic-badge ${plan.hasTraffic?'live':'scheduled'}">${plan.hasTraffic?'🟢 Con tráfico previsto':'🔵 Estimado sin tráfico en vivo'}</span>
+    </div>`;
+}
+
+// ---------- Estado en vivo (cuenta regresiva + avisos) ----------
+function mins(a,b){return Math.round((b-a)/60000)}
+function humanMin(m){
+  m=Math.max(0,m);
+  const h=Math.floor(m/60),mm=m%60;
+  return h>0?`${h}h ${mm}min`:`${mm} min`;
+}
+function tick(){
+  const el=document.getElementById('live-clock');
+  const now=new Date();
+  el.textContent=fmt(now);
+  if(!plan)return;
+  const banner=document.getElementById('status-banner'),tag=document.getElementById('status-tag'),
+        title=document.getElementById('status-title'),detail=document.getElementById('status-detail');
+  let cls,tagTxt,titleTxt,detailTxt;
+
+  if(now<plan.prepStartTime){
+    cls='st-wait';tagTxt='Todavía tranquilo';
+    titleTxt=`Faltan ${humanMin(mins(now,plan.prepStartTime))}`;
+    detailTxt=`Empieza a alistarte a las ${fmt(plan.prepStartTime)}.`;
+  } else if(now<plan.uberRequestTime){
+    cls='st-prep';tagTxt='¡Alístate!';
+    titleTxt=`Alistándote — ${humanMin(mins(now,plan.uberRequestTime))} más`;
+    detailTxt=`Pide tu Uber a las ${fmt(plan.uberRequestTime)}.`;
+    if(!notified.prep){notified.prep=true;notify('APURATE! 🏃','Es hora de empezar a alistarte.')}
+  } else if(now<plan.departureTime){
+    cls='st-uber';tagTxt='¡Pide tu Uber YA!';
+    titleTxt='Pide tu Uber ahora';
+    detailTxt=`Debería llegar en ~${plan.esperaUberMin} min, justo para salir a las ${fmt(plan.departureTime)}.`;
+    if(!notified.uber){notified.uber=true;notify('APURATE! 🚗','¡Pide tu Uber o Cabify ahora!')}
+  } else if(now<plan.arrivalTime){
+    cls='st-go';tagTxt='¡Sal ya!';
+    titleTxt='Sal de casa ahora';
+    detailTxt=`Tu Uber debería estar afuera. Viaje estimado: ${plan.durMin} min.`;
+    if(!notified.go){notified.go=true;notify('APURATE! 🚪','¡Sal ya! Tu Uber debería estar esperando.')}
+  } else if(now<plan.meetingTime){
+    cls='st-road';tagTxt='En camino';
+    titleTxt=`Llegas ~${fmt(plan.arrivalTime)}`;
+    detailTxt=`Reunión a las ${fmt(plan.meetingTime)} en ${plan.destAddr}.`;
+  } else {
+    cls='st-done';tagTxt='En la reunión';
+    titleTxt='🎉 Ya deberías estar ahí';
+    detailTxt=`La reunión empezó a las ${fmt(plan.meetingTime)}.`;
+  }
+  banner.className='status-banner '+cls;
+  tag.textContent=tagTxt;title.textContent=titleTxt;detail.textContent=detailTxt;
+  document.getElementById('btn-uber').classList.toggle('ready',cls==='st-uber'||cls==='st-go');
+  document.getElementById('btn-cabify').classList.toggle('ready',cls==='st-uber'||cls==='st-go');
+}
+function notify(title,body){
+  if('Notification' in window && Notification.permission==='granted'){
+    try{new Notification(title,{body,icon:'icon-192.png'})}catch{}
+  }
+  if(navigator.vibrate)navigator.vibrate([200,100,200]);
+}
+
+// ---------- Pedir Uber / Cabify ----------
+function lanzarUber(){
+  const dest=plan?plan.destAddr:document.getElementById('destino').value;
+  const orig=plan?plan.origAddr:(originMode==='gps'?(userAddr||'mi ubicación'):document.getElementById('origen-manual').value);
+  if(window.sendPrompt)window.sendPrompt(`Pedir un Uber desde ${orig} hasta ${dest}`);
+  else window.open(`https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=${encodeURIComponent(dest)}`,'_blank');
+}
+function lanzarCabify(){
+  const dest=(plan?plan.destAddr:document.getElementById('destino').value)+', Lima, Peru';
+  const orig=originMode==='gps'&&userLat?`${userLat},${userLon}`:(document.getElementById('origen-manual').value+', Lima, Peru');
+  const params=`origin=${encodeURIComponent(orig)}&destination=${encodeURIComponent(dest)}`;
+  const appURL=`cabify://cabify.com/ride?${params}`,webURL=`https://cabify.com/ride?${params}`;
+  const start=Date.now();
+  window.location.href=appURL;
+  setTimeout(()=>{if(Date.now()-start<2000)window.open(webURL,'_blank')},1500);
+}
+
+// ---------- Init ----------
+loadState();
+setOrigin('gps');
+setInterval(()=>{document.getElementById('live-clock').textContent=fmt(new Date())},1000);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
