@@ -34,11 +34,18 @@ en cada transición, mientras la pestaña siga abierta.
   approach que taxi-vs-auto.
 
 ## Estado actual (10 ago 2026)
-MVP construido, verificado en navegador (servidor local) y **publicado en
-GitHub Pages**. Formulario de reunión, origen GPS/manual, checklist editable
-de tareas, cálculo con fallback a Nominatim/haversine, timeline de
-resultados, countdown en vivo, botones de Uber/Cabify. Falta uso real en
-campo (celular, GPS real, reunión real).
+MVP construido, verificado en navegador y **publicado en GitHub Pages**.
+Formulario de reunión (solo hora + dirección), origen GPS/manual, selector
+**Auto / Taxi**, checklist editable de tareas, **Perfil** (nombre + colchón
+de llegada + espera de taxi 7min + modelo de tráfico) con onboarding la
+primera vez, cálculo con fallback a Nominatim/haversine, timeline de
+resultados (5 pasos en Taxi, 4 en Auto — sin espera de taxi), banner de
+estado con la hora clave en grande y countdown chico debajo, tarjeta de
+confirmación "¿te aviso para pedir tu taxi?" que arma la notificación
+justo a tiempo (Uber no soporta reserva por deep link externo, así que no
+se promete auto-reserva), botones Uber/Cabify que copian la dirección al
+portapapeles antes de abrir la app. Falta uso real en campo (celular, GPS
+real, reunión real).
 
 ## ⚠️ Pendiente antes de usar en producción
 ### 1. Autorizar el dominio en Google Cloud Console (pendiente — Amaro debe hacerlo)
