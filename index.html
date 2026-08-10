@@ -40,11 +40,25 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
 .app{max-width:420px;margin:0 auto;padding:16px 14px 60px;width:100%}
 
 .app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.app-header-l{display:flex;align-items:center;gap:10px}
+.app-header-l{display:flex;align-items:center;gap:10px;min-width:0}
 .app-icon{width:34px;height:34px;background:var(--red-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
 .app-title{font-size:17px;font-weight:900;letter-spacing:-.01em;color:var(--text)}
-.app-sub{font-size:11px;color:var(--text3);margin-top:-1px}
+.app-sub{font-size:11px;color:var(--text3);margin-top:-1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-header-r{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.profile-btn{width:36px;height:36px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0}
+.profile-btn:hover{border-color:var(--yellow)}
 .clock-chip{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--text2);font-variant-numeric:tabular-nums}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
+.modal-overlay.show{display:flex}
+.modal-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 18px 26px;width:100%;max-width:420px;max-height:88vh;overflow-y:auto;animation:modal-up .25s ease}
+@media (min-width:460px){.modal-overlay{align-items:center}.modal-card{border-radius:20px}}
+@keyframes modal-up{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-title{font-size:18px;font-weight:900;color:var(--text);margin-bottom:4px}
+.modal-sub{font-size:12.5px;color:var(--text3);margin-bottom:16px;line-height:1.5}
+.modal-card label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;margin-top:12px}
+.modal-card label:first-of-type{margin-top:0}
+.modal-close{width:100%;background:none;border:none;color:var(--text3);font-family:'Inter',sans-serif;font-size:13px;padding:12px;margin-top:6px;cursor:pointer}
 
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px}
 .card-label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:6px;justify-content:space-between}
@@ -76,12 +90,9 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
 .gps-sub{font-size:11.5px;color:var(--text3);margin-top:1px}
 .retry-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:8px 10px;min-height:38px;font-size:12px;color:var(--text2);cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif}
 
-details.settings{margin-bottom:12px}
-details.settings summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);padding:2px 2px 0}
-details.settings summary::-webkit-details-marker{display:none}
-details.settings summary .arrow{transition:transform .2s;color:var(--text3)}
-details.settings[open] summary .arrow{transform:rotate(180deg)}
-.settings-body{padding-top:12px}
+.mode-tabs{display:flex;gap:6px}
+.mtab{flex:1;padding:13px 7px;min-height:var(--tap-min);background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;text-align:center;transition:all .2s}
+.mtab.active{background:var(--red-bg);border-color:var(--red);color:var(--red)}
 
 .checklist-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
 .checklist-row:last-of-type{border-bottom:none}
@@ -142,8 +153,19 @@ details.settings[open] summary .arrow{transform:rotate(180deg)}
 
 .action-row{display:flex;gap:8px;margin-bottom:8px}
 .act-btn{flex:1;padding:14px 6px;min-height:52px;border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:15px;font-weight:800;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text);display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s}
-.act-btn.ready{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.act-btn.ready{border-color:var(--red);background:var(--red-bg);color:var(--red);animation:pulse-r 1.2s infinite}
 .note{font-size:11.5px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.5}
+
+.confirm-card{background:var(--bg2);border:1.5px dashed var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.confirm-card.confirmed{border-style:solid;border-color:var(--green)}
+.confirm-title{font-size:14.5px;font-weight:700;color:var(--text);margin-bottom:3px}
+.confirm-sub{font-size:12.5px;color:var(--text2);line-height:1.5;margin-bottom:10px}
+.confirm-btn{width:100%;padding:12px;min-height:44px;background:var(--yellow-bg);border:1px solid var(--yellow);border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:14px;font-weight:700;color:var(--yellow);cursor:pointer}
+.confirm-btn:hover{background:var(--yellow);color:var(--bg)}
+.confirm-ok{font-size:13.5px;font-weight:700;color:var(--green)}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--text);opacity:0;pointer-events:none;transition:all .25s;z-index:200;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
@@ -154,25 +176,20 @@ details.settings[open] summary .arrow{transform:rotate(180deg)}
       <div class="app-icon">⏰</div>
       <div>
         <div class="app-title">APURATE!</div>
-        <div class="app-sub">¿A qué hora me alisto?</div>
+        <div class="app-sub" id="app-sub">¿A qué hora me alisto?</div>
       </div>
     </div>
-    <div class="clock-chip" id="live-clock">--:--</div>
+    <div class="app-header-r">
+      <button class="profile-btn" onclick="openProfile(false)" title="Tu perfil">👤</button>
+      <div class="clock-chip" id="live-clock">--:--</div>
+    </div>
   </div>
 
   <!-- Reunión -->
   <div class="card">
     <div class="card-label">🗓️ Tu reunión</div>
-    <div class="field-row" style="margin-bottom:10px">
-      <div class="field-col">
-        <label>Hora de la reunión</label>
-        <input type="time" id="hora-reunion" class="finput">
-      </div>
-      <div class="field-col">
-        <label>Llegar con (min)</label>
-        <input type="number" id="buffer-llegada" class="finput" value="10" min="0" max="60">
-      </div>
-    </div>
+    <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:5px">Hora de la reunión</label>
+    <input type="time" id="hora-reunion" class="finput" style="margin-bottom:10px">
     <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:5px">Dirección de la reunión</label>
     <div class="dest-wrap">
       <input type="text" id="destino" class="finput" placeholder="Ej. San Isidro, Av. Javier Prado 123" style="background:none;border:none;padding:12px 0" onblur="checkDestino()">
@@ -197,28 +214,14 @@ details.settings[open] summary .arrow{transform:rotate(180deg)}
     <input type="text" id="origen-manual" class="finput" placeholder="Ej. Miraflores, Av. Larco 456" style="display:none">
   </div>
 
-  <!-- Ajustes -->
-  <details class="settings">
-    <summary>⚙️ Ajustes finos <span class="arrow">▾</span></summary>
-    <div class="settings-body">
-      <div class="card" style="margin-bottom:0">
-        <div class="field-row">
-          <div class="field-col">
-            <label>Espera del Uber (min)</label>
-            <input type="number" id="espera-uber" class="finput" value="5" min="0" max="30">
-          </div>
-          <div class="field-col">
-            <label>Modelo de tráfico</label>
-            <select id="traffic-model" class="finput">
-              <option value="bestguess" selected>Normal</option>
-              <option value="pessimistic">Pesimista</option>
-              <option value="optimistic">Optimista</option>
-            </select>
-          </div>
-        </div>
-      </div>
+  <!-- Modo de viaje -->
+  <div class="card">
+    <div class="card-label">🚗 Vas en</div>
+    <div class="mode-tabs">
+      <button class="mtab active" id="mtab-taxi" onclick="setMode('taxi')">🚕 Taxi / Uber</button>
+      <button class="mtab" id="mtab-auto" onclick="setMode('auto')">🚙 Mi auto</button>
     </div>
-  </details>
+  </div>
 
   <!-- Checklist -->
   <div class="card">
@@ -240,7 +243,13 @@ details.settings[open] summary .arrow{transform:rotate(180deg)}
 
     <div class="timeline" id="timeline"></div>
 
-    <div class="action-row">
+    <div class="confirm-card" id="confirm-card" style="display:none">
+      <div class="confirm-title" id="confirm-title">🚕 ¿Te aviso para pedir tu taxi justo a tiempo?</div>
+      <div class="confirm-sub" id="confirm-sub">—</div>
+      <button class="confirm-btn" id="confirm-btn" onclick="confirmarAviso()">Sí, avísame</button>
+    </div>
+
+    <div class="action-row" id="action-row">
       <button class="act-btn" id="btn-uber" onclick="lanzarUber()">🚗 Pedir Uber</button>
       <button class="act-btn" id="btn-cabify" onclick="lanzarCabify()">🟡 Pedir Cabify</button>
     </div>
@@ -249,14 +258,46 @@ details.settings[open] summary .arrow{transform:rotate(180deg)}
 
 </div>
 
+<!-- Modal Perfil -->
+<div class="modal-overlay" id="profile-overlay">
+  <div class="modal-card">
+    <div class="modal-title" id="profile-title">👤 Tu perfil</div>
+    <div class="modal-sub" id="profile-sub">Estos ajustes son tuyos — se aplican a todas tus reuniones.</div>
+    <label>Tu nombre</label>
+    <input type="text" id="prof-name" class="finput" placeholder="Ej. Amaro">
+    <div class="field-row">
+      <div class="field-col">
+        <label>Llegar con (min)</label>
+        <input type="number" id="prof-buffer" class="finput" value="10" min="0" max="60">
+      </div>
+      <div class="field-col">
+        <label>Espera de taxi (min)</label>
+        <input type="number" id="prof-espera" class="finput" value="7" min="0" max="30">
+      </div>
+    </div>
+    <label>Modelo de tráfico</label>
+    <select id="prof-traffic" class="finput">
+      <option value="bestguess" selected>Normal</option>
+      <option value="pessimistic">Pesimista</option>
+      <option value="optimistic">Optimista</option>
+    </select>
+    <button class="calc-btn" style="margin-top:16px" onclick="saveProfile()">Guardar</button>
+    <button class="modal-close" id="profile-close-btn" onclick="closeProfile()">Cerrar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
 const SK='apurate_v1';
-let originMode='gps';
+const PK='apurate_profile_v1';
+let originMode='gps',mode='taxi';
 let userLat=null,userLon=null,userAddr='';
 let destLat=null,destLon=null,destName='';
 let plan=null; // resultado del último cálculo
 let tickTimer=null;
 let notified={prep:false,uber:false,go:false};
+let profile={name:'',buffer:10,esperaTaxi:7,trafficModel:'bestguess',onboarded:false};
 
 const DEFAULT_TASKS=[
   {name:'Ducharme',min:15},
@@ -267,7 +308,44 @@ const DEFAULT_TASKS=[
 ];
 let tasks=[];
 
-// ---------- Persistencia ----------
+// ---------- Perfil (nombre + ajustes finos, aplica a toda reunión) ----------
+function loadProfile(){
+  try{profile={...profile,...JSON.parse(localStorage.getItem(PK)||'{}')}}catch{}
+  updateGreeting();
+  if(!profile.onboarded)openProfile(true);
+}
+function saveProfileToDisk(){try{localStorage.setItem(PK,JSON.stringify(profile))}catch{}}
+function updateGreeting(){
+  document.getElementById('app-sub').textContent=profile.name?`Hola, ${profile.name} 👋`:'¿A qué hora me alisto?';
+}
+function openProfile(first){
+  document.getElementById('prof-name').value=profile.name||'';
+  document.getElementById('prof-buffer').value=profile.buffer??10;
+  document.getElementById('prof-espera').value=profile.esperaTaxi??7;
+  document.getElementById('prof-traffic').value=profile.trafficModel||'bestguess';
+  document.getElementById('profile-title').textContent=first?'👋 ¡Hola! Antes de empezar...':'👤 Tu perfil';
+  document.getElementById('profile-sub').textContent=first
+    ?'Cuéntame tu nombre y ajusta estos tiempos a tu ritmo real — los puedes cambiar cuando quieras tocando tu perfil.'
+    :'Estos ajustes son tuyos — se aplican a todas tus reuniones.';
+  document.getElementById('profile-close-btn').style.display=first?'none':'block';
+  document.getElementById('profile-overlay').classList.add('show');
+}
+function closeProfile(){
+  if(!profile.onboarded)return; // primera vez: obliga a guardar antes de cerrar
+  document.getElementById('profile-overlay').classList.remove('show');
+}
+function saveProfile(){
+  profile.name=document.getElementById('prof-name').value.trim();
+  profile.buffer=Math.max(0,parseInt(document.getElementById('prof-buffer').value)||10);
+  profile.esperaTaxi=Math.max(0,parseInt(document.getElementById('prof-espera').value)||7);
+  profile.trafficModel=document.getElementById('prof-traffic').value;
+  profile.onboarded=true;
+  saveProfileToDisk();
+  updateGreeting();
+  document.getElementById('profile-overlay').classList.remove('show');
+}
+
+// ---------- Persistencia (reunión + checklist + modo) ----------
 function loadState(){
   let d={};
   try{d=JSON.parse(localStorage.getItem(SK)||'{}')}catch{}
@@ -275,19 +353,14 @@ function loadState(){
   tasks.forEach(t=>{if(t.on===undefined)t.on=true});
   document.getElementById('hora-reunion').value=d.horaReunion||'';
   document.getElementById('destino').value=d.destino||'';
-  document.getElementById('buffer-llegada').value=d.buffer??10;
-  document.getElementById('espera-uber').value=d.esperaUber??5;
-  document.getElementById('traffic-model').value=d.trafficModel||'bestguess';
+  setMode(d.mode||'taxi');
   renderChecklist();
 }
 function saveState(){
   try{localStorage.setItem(SK,JSON.stringify({
-    tasks,
+    tasks,mode,
     horaReunion:document.getElementById('hora-reunion').value,
-    destino:document.getElementById('destino').value,
-    buffer:document.getElementById('buffer-llegada').value,
-    esperaUber:document.getElementById('espera-uber').value,
-    trafficModel:document.getElementById('traffic-model').value
+    destino:document.getElementById('destino').value
   }))}catch{}
 }
 function resetChecklist(){
@@ -353,6 +426,14 @@ function setGeoError(msg){
   document.getElementById('loc-name').textContent=msg||'GPS no disponible';
   document.getElementById('loc-sub').textContent='Toca ↺ o cambia a "Escribir"';
   document.getElementById('loc-retry').style.display='block';
+}
+
+// ---------- Modo Auto / Taxi ----------
+function setMode(m){
+  mode=m;
+  document.getElementById('mtab-taxi').classList.toggle('active',m==='taxi');
+  document.getElementById('mtab-auto').classList.toggle('active',m==='auto');
+  saveState();
 }
 
 // ---------- Geocoding (Google Places con fallback Nominatim) ----------
@@ -462,9 +543,9 @@ async function calcular(){
     if(destLat===null||destName!==destVal){const d=await geo(destVal);destLat=d.lat;destLon=d.lon;destName=destVal}
 
     const meetingTime=parseMeetingDate(horaVal);
-    const bufferMin=Math.max(0,parseInt(document.getElementById('buffer-llegada').value)||0);
-    const esperaUberMin=Math.max(0,parseInt(document.getElementById('espera-uber').value)||0);
-    const trafficModel=document.getElementById('traffic-model').value;
+    const bufferMin=profile.buffer;
+    const esperaTaxiMin=profile.esperaTaxi;
+    const trafficModel=profile.trafficModel;
     const arrivalTime=addMin(meetingTime,-bufferMin);
 
     // Paso 1: duración base (sin tráfico) para estimar hora de salida aproximada
@@ -482,29 +563,59 @@ async function calcular(){
       durMin=Math.round(distKm/0.33);
     }
 
+    // El tiempo total necesario = ajustes finos (checklist + espera de taxi) + tiempo de traslado con tráfico.
+    // departureTime sale SIEMPRE del traslado real; el resto se resta hacia atrás desde ahí.
     const departureTime=addMin(arrivalTime,-durMin);
-    const uberRequestTime=addMin(departureTime,-esperaUberMin);
-    const prepStartTime=addMin(uberRequestTime,-totalPrepMin());
+    const taxiRequestTime=mode==='taxi'?addMin(departureTime,-esperaTaxiMin):null;
+    const prepEndTime=mode==='taxi'?taxiRequestTime:departureTime;
+    const prepStartTime=addMin(prepEndTime,-totalPrepMin());
 
-    plan={meetingTime,arrivalTime,departureTime,uberRequestTime,prepStartTime,durMin,distKm,hasTraffic,bufferMin,esperaUberMin,origAddr:originMode==='gps'?(userAddr||'mi ubicación'):document.getElementById('origen-manual').value,destAddr:destVal};
+    plan={mode,meetingTime,arrivalTime,departureTime,taxiRequestTime,prepStartTime,durMin,distKm,hasTraffic,bufferMin,esperaTaxiMin,
+      origAddr:originMode==='gps'?(userAddr||'mi ubicación'):document.getElementById('origen-manual').value,destAddr:destVal,avisoConfirmado:false};
     notified={prep:false,uber:false,go:false};
     renderPlan();
+    document.getElementById('action-row').style.display=mode==='taxi'?'flex':'none';
+    const cc=document.getElementById('confirm-card');
+    if(mode==='taxi'){
+      cc.style.display='block';cc.className='confirm-card';
+      document.getElementById('confirm-title').textContent='🚕 ¿Te aviso para pedir tu taxi justo a tiempo?';
+      document.getElementById('confirm-sub').textContent=`Considerando tráfico y ~${esperaTaxiMin} min de espera del taxi, deberías pedirlo a las ${fmt(taxiRequestTime)} para llegar 👉 a las ${fmt(arrivalTime)} (${bufferMin} min antes de tu reunión).`;
+      document.getElementById('confirm-btn').style.display='block';
+      document.getElementById('confirm-btn').textContent='Sí, avísame';
+    } else {
+      cc.style.display='none';
+    }
     document.getElementById('results').classList.add('show');
     document.getElementById('results').scrollIntoView({behavior:'smooth',block:'nearest'});
     saveState();
     if(!tickTimer)tickTimer=setInterval(tick,1000);
     tick();
-    if('Notification' in window && Notification.permission==='default')Notification.requestPermission();
   }catch(e){err.textContent=e.message;err.style.display='block'}
   finally{btn.textContent='Calcular →';btn.disabled=false}
 }
 
+function confirmarAviso(){
+  if(!plan)return;
+  plan.avisoConfirmado=true;
+  if('Notification' in window && Notification.permission==='default')Notification.requestPermission();
+  const cc=document.getElementById('confirm-card');
+  cc.classList.add('confirmed');
+  document.getElementById('confirm-title').textContent='✅ Listo, te aviso a tiempo';
+  document.getElementById('confirm-sub').innerHTML=`Te voy a avisar (notificación + vibración) exactamente a las <strong>${fmt(plan.taxiRequestTime)}</strong> para que pidas el taxi tú mismo — no puedo pedirlo en automático por ti (Uber no ofrece reserva por link externo), pero si dejas la app abierta te aviso en el segundo justo.`;
+  document.getElementById('confirm-btn').style.display='none';
+}
+
 function renderPlan(){
   if(!plan)return;
-  const rows=[
+  const rows=plan.mode==='taxi'?[
     {icon:'🧖',label:'Empieza a alistarte',time:plan.prepStartTime,sub:`${totalPrepMin()} min de tareas`,highlight:true},
-    {icon:'🚗',label:'Pide tu Uber / Cabify',time:plan.uberRequestTime,sub:`Llega en ~${plan.esperaUberMin} min`},
+    {icon:'🚕',label:'Pide tu taxi / Uber',time:plan.taxiRequestTime,sub:`Llega en ~${plan.esperaTaxiMin} min`},
     {icon:'🚪',label:'Sales de casa',time:plan.departureTime,sub:`Viaje: ${plan.durMin} min · ${plan.distKm.toFixed(1)} km`},
+    {icon:'📍',label:'Llegas',time:plan.arrivalTime,sub:`${plan.bufferMin} min antes de la reunión`},
+    {icon:'🗓️',label:'Reunión',time:plan.meetingTime,sub:plan.destAddr}
+  ]:[
+    {icon:'🧖',label:'Empieza a alistarte',time:plan.prepStartTime,sub:`${totalPrepMin()} min de tareas`,highlight:true},
+    {icon:'🚙',label:'Sales de casa (en tu auto)',time:plan.departureTime,sub:`Viaje: ${plan.durMin} min · ${plan.distKm.toFixed(1)} km`},
     {icon:'📍',label:'Llegas',time:plan.arrivalTime,sub:`${plan.bufferMin} min antes de la reunión`},
     {icon:'🗓️',label:'Reunión',time:plan.meetingTime,sub:plan.destAddr}
   ];
@@ -523,11 +634,29 @@ function renderPlan(){
 }
 
 // ---------- Estado en vivo (cuenta regresiva + avisos) ----------
+// La hora clave siempre va grande (accionable); el countdown va chico debajo.
 function mins(a,b){return Math.round((b-a)/60000)}
 function humanMin(m){
   m=Math.max(0,m);
   const h=Math.floor(m/60),mm=m%60;
   return h>0?`${h}h ${mm}min`:`${mm} min`;
+}
+function stagesFor(plan){
+  if(plan.mode==='taxi')return[
+    {until:plan.prepStartTime,cls:'st-wait',tag:'Todavía tranquilo',big:`Alístate a las ${fmt(plan.prepStartTime)}`},
+    {until:plan.taxiRequestTime,cls:'st-prep',tag:'¡Alístate!',big:`Pide tu taxi a las ${fmt(plan.taxiRequestTime)}`,notifyKey:'prep',notifyMsg:['APURATE! 🏃','Es hora de empezar a alistarte.']},
+    {until:plan.departureTime,cls:'st-uber',tag:'¡Pide tu taxi YA!',big:`Sal de casa a las ${fmt(plan.departureTime)}`,notifyKey:'uber',notifyMsg:['APURATE! 🚕','¡Pide tu taxi o Uber ahora!']},
+    {until:plan.arrivalTime,cls:'st-go',tag:'¡Sal ya!',big:`Llegas a las ${fmt(plan.arrivalTime)}`,notifyKey:'go',notifyMsg:['APURATE! 🚪','¡Sal ya! Tu taxi debería estar esperando.']},
+    {until:plan.meetingTime,cls:'st-road',tag:'En camino',big:`Reunión a las ${fmt(plan.meetingTime)}`},
+    {until:null,cls:'st-done',tag:'En la reunión',big:'🎉 Ya deberías estar ahí'}
+  ];
+  return[
+    {until:plan.prepStartTime,cls:'st-wait',tag:'Todavía tranquilo',big:`Alístate a las ${fmt(plan.prepStartTime)}`},
+    {until:plan.departureTime,cls:'st-prep',tag:'¡Alístate!',big:`Sal de casa a las ${fmt(plan.departureTime)}`,notifyKey:'prep',notifyMsg:['APURATE! 🏃','Es hora de empezar a alistarte.']},
+    {until:plan.arrivalTime,cls:'st-go',tag:'¡Sal ya!',big:`Llegas a las ${fmt(plan.arrivalTime)}`,notifyKey:'go',notifyMsg:['APURATE! 🚙','¡Sal ya hacia tu auto!']},
+    {until:plan.meetingTime,cls:'st-road',tag:'En camino',big:`Reunión a las ${fmt(plan.meetingTime)}`},
+    {until:null,cls:'st-done',tag:'En la reunión',big:'🎉 Ya deberías estar ahí'}
+  ];
 }
 function tick(){
   const el=document.getElementById('live-clock');
@@ -536,40 +665,21 @@ function tick(){
   if(!plan)return;
   const banner=document.getElementById('status-banner'),tag=document.getElementById('status-tag'),
         title=document.getElementById('status-title'),detail=document.getElementById('status-detail');
-  let cls,tagTxt,titleTxt,detailTxt;
+  const stages=stagesFor(plan);
+  const stage=stages.find(s=>s.until===null||now<s.until)||stages[stages.length-1];
 
-  if(now<plan.prepStartTime){
-    cls='st-wait';tagTxt='Todavía tranquilo';
-    titleTxt=`Faltan ${humanMin(mins(now,plan.prepStartTime))}`;
-    detailTxt=`Empieza a alistarte a las ${fmt(plan.prepStartTime)}.`;
-  } else if(now<plan.uberRequestTime){
-    cls='st-prep';tagTxt='¡Alístate!';
-    titleTxt=`Alistándote — ${humanMin(mins(now,plan.uberRequestTime))} más`;
-    detailTxt=`Pide tu Uber a las ${fmt(plan.uberRequestTime)}.`;
-    if(!notified.prep){notified.prep=true;notify('APURATE! 🏃','Es hora de empezar a alistarte.')}
-  } else if(now<plan.departureTime){
-    cls='st-uber';tagTxt='¡Pide tu Uber YA!';
-    titleTxt='Pide tu Uber ahora';
-    detailTxt=`Debería llegar en ~${plan.esperaUberMin} min, justo para salir a las ${fmt(plan.departureTime)}.`;
-    if(!notified.uber){notified.uber=true;notify('APURATE! 🚗','¡Pide tu Uber o Cabify ahora!')}
-  } else if(now<plan.arrivalTime){
-    cls='st-go';tagTxt='¡Sal ya!';
-    titleTxt='Sal de casa ahora';
-    detailTxt=`Tu Uber debería estar afuera. Viaje estimado: ${plan.durMin} min.`;
-    if(!notified.go){notified.go=true;notify('APURATE! 🚪','¡Sal ya! Tu Uber debería estar esperando.')}
-  } else if(now<plan.meetingTime){
-    cls='st-road';tagTxt='En camino';
-    titleTxt=`Llegas ~${fmt(plan.arrivalTime)}`;
-    detailTxt=`Reunión a las ${fmt(plan.meetingTime)} en ${plan.destAddr}.`;
-  } else {
-    cls='st-done';tagTxt='En la reunión';
-    titleTxt='🎉 Ya deberías estar ahí';
-    detailTxt=`La reunión empezó a las ${fmt(plan.meetingTime)}.`;
+  title.textContent=stage.big;
+  detail.textContent=stage.until?`Faltan ${humanMin(mins(now,stage.until))}`:`Reunión desde las ${fmt(plan.meetingTime)}`;
+  tag.textContent=stage.tag;
+  banner.className='status-banner '+stage.cls;
+
+  if(stage.notifyKey&&!notified[stage.notifyKey]){
+    notified[stage.notifyKey]=true;
+    notify(...stage.notifyMsg);
   }
-  banner.className='status-banner '+cls;
-  tag.textContent=tagTxt;title.textContent=titleTxt;detail.textContent=detailTxt;
-  document.getElementById('btn-uber').classList.toggle('ready',cls==='st-uber'||cls==='st-go');
-  document.getElementById('btn-cabify').classList.toggle('ready',cls==='st-uber'||cls==='st-go');
+  const rideReady=stage.cls==='st-uber'||stage.cls==='st-go';
+  document.getElementById('btn-uber').classList.toggle('ready',rideReady);
+  document.getElementById('btn-cabify').classList.toggle('ready',rideReady);
 }
 function notify(title,body){
   if('Notification' in window && Notification.permission==='granted'){
@@ -578,15 +688,34 @@ function notify(title,body){
   if(navigator.vibrate)navigator.vibrate([200,100,200]);
 }
 
+// ---------- Toast ----------
+let toastTimer=null;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
 // ---------- Pedir Uber / Cabify ----------
+// Copiamos la dirección al portapapeles como respaldo: el deep link ya manda el
+// destino como parámetro, pero si la app de Uber/Cabify no lo autocompleta,
+// el usuario la pega directo en vez de tipearla de nuevo.
+function copyDest(dest){
+  if(navigator.clipboard&&dest)navigator.clipboard.writeText(dest).catch(()=>{});
+  showToast('📋 Dirección copiada — pégala si no aparece sola');
+}
 function lanzarUber(){
   const dest=plan?plan.destAddr:document.getElementById('destino').value;
   const orig=plan?plan.origAddr:(originMode==='gps'?(userAddr||'mi ubicación'):document.getElementById('origen-manual').value);
+  copyDest(dest);
   if(window.sendPrompt)window.sendPrompt(`Pedir un Uber desde ${orig} hasta ${dest}`);
   else window.open(`https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=${encodeURIComponent(dest)}`,'_blank');
 }
 function lanzarCabify(){
-  const dest=(plan?plan.destAddr:document.getElementById('destino').value)+', Lima, Peru';
+  const destPlain=plan?plan.destAddr:document.getElementById('destino').value;
+  copyDest(destPlain);
+  const dest=destPlain+', Lima, Peru';
   const orig=originMode==='gps'&&userLat?`${userLat},${userLon}`:(document.getElementById('origen-manual').value+', Lima, Peru');
   const params=`origin=${encodeURIComponent(orig)}&destination=${encodeURIComponent(dest)}`;
   const appURL=`cabify://cabify.com/ride?${params}`,webURL=`https://cabify.com/ride?${params}`;
@@ -596,6 +725,7 @@ function lanzarCabify(){
 }
 
 // ---------- Init ----------
+loadProfile();
 loadState();
 setOrigin('gps');
 setInterval(()=>{document.getElementById('live-clock').textContent=fmt(new Date())},1000);
