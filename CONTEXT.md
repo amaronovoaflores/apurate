@@ -28,31 +28,30 @@ en cada transición, mientras la pestaña siga abierta.
 
 ## Repo y deploy
 - Carpeta local: `G:\Mi unidad\apurate`
-- Sin repo Git todavía — pendiente decidir con Amaro si se crea GitHub repo propio
-  y se publica en GitHub Pages (requiere su autorización explícita antes de hacer
-  push/publish).
+- GitHub: https://github.com/amaronovoaflores/apurate
+- GitHub Pages: https://amaronovoaflores.github.io/apurate/ (activo, deploy desde `main`/root)
 - Tecnología: HTML/CSS/JS puro, single file (`index.html`), sin backend — mismo
   approach que taxi-vs-auto.
 
 ## Estado actual (10 ago 2026)
-MVP construido y verificado en navegador (servidor local): formulario de
-reunión, origen GPS/manual, checklist editable de tareas, cálculo con
-fallback a Nominatim/haversine, timeline de resultados, countdown en vivo,
-botones de Uber/Cabify. Falta uso real en campo.
+MVP construido, verificado en navegador (servidor local) y **publicado en
+GitHub Pages**. Formulario de reunión, origen GPS/manual, checklist editable
+de tareas, cálculo con fallback a Nominatim/haversine, timeline de
+resultados, countdown en vivo, botones de Uber/Cabify. Falta uso real en
+campo (celular, GPS real, reunión real).
 
 ## ⚠️ Pendiente antes de usar en producción
-### 1. Autorizar el dominio en Google Cloud Console
+### 1. Autorizar el dominio en Google Cloud Console (pendiente — Amaro debe hacerlo)
 Reusa la misma API key hardcodeada de taxi-vs-auto
 (`AIzaSyBjOBgEngBzLZh1yiF1bkq4C-KtdiILHCI`). Si esa key está restringida por
 HTTP referrer solo al path de taxi-vs-auto, hay que ampliar la restricción a
 `https://amaronovoaflores.github.io/*` (o crear una key nueva) para que
-funcione en el dominio/path de apurate. Sin esto, la app sigue funcionando
-(cae a Nominatim + estimado por línea recta) pero sin tráfico real.
-### 2. Decidir repo y deploy
-Falta iniciar el repo Git, crear el repo en GitHub y publicar en Pages —
-ninguna de estas acciones se hizo todavía porque implican publicar
-contenido y requieren tu confirmación explícita.
-### 3. Probar en campo con reunión real
+funcione en el dominio/path de apurate. Cambiar restricciones de API keys es
+una acción de seguridad de cuenta que Claude tiene bloqueada por política —
+Amaro debe hacerlo él mismo en Cloud Console → Credentials. Sin esto, la app
+sigue funcionando (cae a Nominatim + estimado por línea recta) pero sin
+tráfico real.
+### 2. Probar en campo con reunión real
 El cálculo se verificó con datos de prueba (no un caso real con tráfico en
 vivo) — confirmar que las horas resultantes se sienten correctas en el uso
 diario y ajustar los defaults del checklist si hace falta.
