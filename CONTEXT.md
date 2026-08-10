@@ -47,17 +47,29 @@ se promete auto-reserva), botones Uber/Cabify que copian la dirección al
 portapapeles antes de abrir la app. Falta uso real en campo (celular, GPS
 real, reunión real).
 
-## ⚠️ Pendiente antes de usar en producción
-### 1. Autorizar el dominio en Google Cloud Console (pendiente — Amaro debe hacerlo)
-Reusa la misma API key hardcodeada de taxi-vs-auto
-(`AIzaSyBjOBgEngBzLZh1yiF1bkq4C-KtdiILHCI`). Si esa key está restringida por
-HTTP referrer solo al path de taxi-vs-auto, hay que ampliar la restricción a
-`https://amaronovoaflores.github.io/*` (o crear una key nueva) para que
-funcione en el dominio/path de apurate. Cambiar restricciones de API keys es
-una acción de seguridad de cuenta que Claude tiene bloqueada por política —
-Amaro debe hacerlo él mismo en Cloud Console → Credentials. Sin esto, la app
-sigue funcionando (cae a Nominatim + estimado por línea recta) pero sin
-tráfico real.
+## ✅ Resuelto (10 ago 2026, tarde)
+### API key propia, en el proyecto correcto, con las 3 APIs habilitadas
+apurate ya no reusa la key de taxi-vs-auto — tiene su propia key
+(`AIzaSyADGCtGld68ZHWeAonBALzNRZL79Lhafk8`) creada dentro del proyecto de
+Google Cloud **"apurate"**, con **Maps JavaScript API + Places API +
+Distance Matrix API** habilitadas y restringida por referrer a
+`https://amaronovoaflores.github.io/*`. Verificado en vivo: Distance Matrix
+responde `status=OK` con datos reales y el badge de la app muestra
+"🟢 Con tráfico previsto".
+
+Troubleshooting real que costó varias vueltas, por si se repite en otro
+proyecto: (1) "habilitar la API" en Library y "restringir la key a esa API"
+en Credentials son dos pasos independientes — falta uno y sigue fallando
+con `ApiNotActivatedMapError` aunque el otro esté bien; (2) la key nueva se
+había creado sin querer en un proyecto de GCP distinto a "apurate", así que
+activar las APIs en "apurate" no le llegaba a esa key — la solución fue
+crear la key *dentro* del proyecto correcto en vez de perseguir en cuál
+había quedado la vieja; (3) de paso se encontró y arregló un bug real en
+[apurate/index.html](index.html): `trafficModel` se mandaba como `'bestGuess'`
+(camelCase) pero `google.maps.TrafficModel` solo acepta minúsculas
+(`'bestguess'`) — quedaba tapado por el fallback silencioso hasta que la key
+por fin autenticó y se destapó el error.
+
 ### 2. Probar en campo con reunión real
 El cálculo se verificó con datos de prueba (no un caso real con tráfico en
 vivo) — confirmar que las horas resultantes se sienten correctas en el uso
