@@ -121,11 +121,10 @@ restricciones de arquitectura que se le dieron al diseñador). Cambios:
 - Todos los ids del DOM y funciones JS se preservaron intactos — cero
   cambios de lógica/cálculo, solo visual. Verificado en vivo con Distance
   Matrix real funcionando (`con tráfico en vivo`) sobre el nuevo diseño.
-- Pendiente opcional: los íconos de instalación PWA (`icon-192.png`,
-  `icon-512.png`, `apple-touch-icon.png`) siguen con la paleta vieja
-  (rojo/amarillo + reloj) — no se tocaron porque el handoff no los incluía,
-  se podrían regenerar a juego con el ícono de rayo nuevo si se quiere
-  consistencia total.
+- Íconos de instalación PWA (`icon-192.png`, `icon-512.png`,
+  `apple-touch-icon.png`) actualizados a la paleta nueva — mismo degrade
+  rojo/rojo2 y el ícono de rayo del header, generados con PowerShell +
+  System.Drawing (ver historial de commits para el script).
 
 ## Troubleshooting de la API key (por si se repite en otro proyecto)
 Costó varias vueltas — dejar constancia:
