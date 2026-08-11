@@ -78,14 +78,54 @@ reabre tocando el ícono.
 - **Un solo campo "espera de taxi"** (no uno separado para Uber vs taxi de
   calle) — el modo es genérico Auto/Taxi, no distingue plataforma.
 
-## Reglas de diseño (heredadas de taxi-vs-auto)
+## Reglas de diseño
 - Mobile-first — el 100% del uso es en celular
-- Paleta: `--bg:#0B0B14`, acentos `--yellow`, `--green`, `--blue`, `--red`,
-  usando `--red` como color principal de marca (urgencia) en vez de `--yellow`
 - Sin frameworks externos — HTML/CSS/JS vanilla puro
 - Mismo patrón de geocoding (Google Places con fallback a Nominatim) y de
   deep links a Uber/Cabify que taxi-vs-auto, ambos con timeout de 4s para no
   colgar la UI si Google no responde
+
+## Rediseño visual "hotline" (10 ago 2026, noche)
+Se aplicó un refresco visual completo via handoff de diseño (paquete
+`Refrescador visual para PWA.zip`, ver `design-brief.md` para las
+restricciones de arquitectura que se le dieron al diseñador). Cambios:
+- **Paleta nueva**: `--bg:#0D0B14`, `--red:#FF3B6B` (marca/urgencia,
+  reemplaza al rojo anterior), `--yellow:#FFCE45`, `--green:#00E5A0`,
+  `--blue:#4CC9F0` (toggles de selección Hoy/Mañana=rojo,
+  GPS/Escribir y Taxi/Auto=celeste — sí, el toggle de día usa rojo y los
+  otros dos celeste, es intencional del handoff)
+- **Set de íconos SVG inline** (`ICON_PATHS`/`iconSvg()` en el JS)
+  reemplazando todos los emojis — sin dependencias externas, se pintan al
+  cargar via `data-icon="nombre,tamaño,color"` + `paintStaticIcons()`, o
+  generados inline en JS para contenido dinámico (checklist, timeline)
+- **Nueva barra sticky `#hero-times`**: 3 horas clave siempre visibles al
+  scrollear los resultados (Reunión / Alístate desde / Pide el taxi o
+  Sales de casa según modo) — puramente visual, lee del mismo `plan` que
+  ya se calculaba, no tocó lógica
+- Timeline con puntos conectados por línea vertical, checklist con
+  checkbox custom (checkmark SVG, tachado si está desactivada), modal de
+  perfil rediseñado tipo bottom sheet, botón Calcular con spinner animado,
+  confirm-card ya no se oculta al confirmar (queda visible con check verde)
+- **Decisiones tomadas al aplicar el handoff** (el diseño de referencia
+  traía cosas que no se llevaron literal):
+  - Se mantuvo español **tú** (Lima) — el prototipo de referencia usaba
+    voseo argentino ("Salís", "Pedí"), se ignoró esa parte y solo se tomó
+    lo visual
+  - El `<select>` de modelo de tráfico mantiene sus `value` reales
+    (`bestguess`/`pessimistic`/`optimistic`, los que acepta la API de
+    Google) en vez de las etiquetas inventadas del demo
+    (`mejor`/`promedio`/`pesimista`) que habrían roto el cálculo
+  - El selector de fases del prototipo (6 chips para previsualizar
+    manualmente cada fase) **no se llevó** — es una ayuda del demo, en la
+    app real el banner cambia de fase solo por tiempo real
+- Todos los ids del DOM y funciones JS se preservaron intactos — cero
+  cambios de lógica/cálculo, solo visual. Verificado en vivo con Distance
+  Matrix real funcionando (`con tráfico en vivo`) sobre el nuevo diseño.
+- Pendiente opcional: los íconos de instalación PWA (`icon-192.png`,
+  `icon-512.png`, `apple-touch-icon.png`) siguen con la paleta vieja
+  (rojo/amarillo + reloj) — no se tocaron porque el handoff no los incluía,
+  se podrían regenerar a juego con el ícono de rayo nuevo si se quiere
+  consistencia total.
 
 ## Troubleshooting de la API key (por si se repite en otro proyecto)
 Costó varias vueltas — dejar constancia:
