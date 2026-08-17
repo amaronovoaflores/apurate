@@ -187,6 +187,15 @@ input[type=time]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.6}
 .cl-add{width:100%;display:flex;align-items:center;justify-content:center;gap:7px;border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:10px;color:var(--text3);font-size:13px;font-weight:700;font-family:'Inter',sans-serif;background:none;cursor:pointer;margin-top:2px}
 .cl-add:hover{border-color:var(--yellow);color:var(--yellow)}
 
+.agenda-day-row{background:var(--bg3);border-radius:var(--radius-sm);padding:10px;margin-bottom:8px}
+.agenda-day-head{display:flex;align-items:center;gap:9px;cursor:pointer}
+.agenda-day-name{font-size:13.5px;font-weight:700;color:var(--text)}
+.agenda-day-fields{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.agenda-day-fields .finput{padding:9px 10px;font-size:13.5px;min-height:38px;font-weight:600}
+.agenda-modo{min-height:36px}
+.agenda-modo .toggle-opt{font-size:11.5px;padding:7px 2px}
+.agenda-hint{font-size:12px;color:var(--text3);line-height:1.4;margin:-2px 0 10px}
+
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border);border-radius:99px;padding:11px 18px;font-size:13.5px;font-weight:600;color:var(--text);opacity:0;pointer-events:none;transition:all .25s ease;z-index:200;white-space:nowrap;box-shadow:0 12px 30px -10px rgba(0,0,0,.6);display:flex;align-items:center;gap:8px}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
@@ -249,8 +258,9 @@ input[type=time]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.6}
   <div class="card">
     <div class="card-label"><span data-icon="car,14,var(--text3)"></span>Vas en</div>
     <div class="toggle-row">
-      <button class="toggle-opt tone-blue active" id="mtab-taxi" onclick="setMode('taxi')">Taxi / Uber</button>
-      <button class="toggle-opt tone-blue" id="mtab-auto" onclick="setMode('auto')">Mi auto</button>
+      <button class="toggle-opt tone-blue active" id="mtab-taxi" onclick="setMode('taxi')">Taxi/Uber</button>
+      <button class="toggle-opt tone-blue" id="mtab-auto" onclick="setMode('auto')">Auto</button>
+      <button class="toggle-opt tone-blue" id="mtab-bus" onclick="setMode('bus')">Bus</button>
     </div>
   </div>
 
@@ -359,6 +369,16 @@ input[type=time]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.6}
     <div id="checklist"></div>
     <button class="cl-add" onclick="addTask()"><span data-icon="plus,14,var(--text3)"></span>Agregar tarea</button>
 
+    <div class="section-row">
+      <div class="section-label"><span data-icon="calendar,13,var(--text3)" style="margin-right:6px"></span>Agenda semanal</div>
+    </div>
+    <div class="toggle-row" style="margin-bottom:10px">
+      <button class="toggle-opt tone-blue active" id="agenda-off" onclick="setAgendaEnabled(false)">Desactivada</button>
+      <button class="toggle-opt tone-blue" id="agenda-on" onclick="setAgendaEnabled(true)">Activada</button>
+    </div>
+    <p class="agenda-hint">Configura cada día una vez. Con la agenda activada, el día que te toque la app calcula sola apenas la abres.</p>
+    <div id="agenda-days"></div>
+
     <button class="calc-btn" style="margin-top:18px" onclick="saveProfile()">Guardar</button>
   </div>
 </div>
@@ -374,6 +394,8 @@ const ICON_PATHS={
   pin:['M12 21.5S5.5 14.4 5.5 9.6a6.5 6.5 0 0113 0c0 4.8-6.5 11.9-6.5 11.9z','M12 11.7a2.1 2.1 0 100-4.2 2.1 2.1 0 000 4.2z'],
   taxi:['M4 16.2l1.4-4.7A2 2 0 017.3 10h9.4a2 2 0 011.9 1.5l1.4 4.7','M3 16.2h18v2.6a1 1 0 01-1 1h-1.3a1 1 0 01-1-1v-.6H6.3v.6a1 1 0 01-1 1H4a1 1 0 01-1-1v-2.6z','M10 6.5h4v3.5h-4z'],
   car:['M3 16l1.5-4.8A2 2 0 016.4 9.8h11.2a2 2 0 011.9 1.4L21 16','M2.3 16h19.4v2.3a1 1 0 01-1 1h-1a1 1 0 01-1-1v-.5H5.3v.5a1 1 0 01-1 1h-1a1 1 0 01-1-1V16z'],
+  bus:['M4 8a3 3 0 013-3h10a3 3 0 013 3v9H4V8z','M4 13h16','M7.5 20a1.5 1.5 0 100-3 1.5 1.5 0 000 3z','M16.5 20a1.5 1.5 0 100-3 1.5 1.5 0 000 3z'],
+  calendar:['M4 8.5h16','M5.5 4.5h13a1.5 1.5 0 011.5 1.5v13a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 19V6a1.5 1.5 0 011.5-1.5z','M8 3v3','M16 3v3'],
   warning:['M12 3.3L22 20.5H2L12 3.3z','M12 10v4.2'],
   warningDot:['M12 17.4a.9.9 0 100 1.8.9.9 0 000-1.8z'],
   check:['M12 21a9 9 0 100-18 9 9 0 000 18z','M8 12.3l2.6 2.6L16.2 9'],
@@ -409,6 +431,7 @@ function paintStaticIcons(){
 
 const SK='apurate_v1';
 const PK='apurate_profile_v1';
+const AK='apurate_agenda_v1';
 let originMode='gps',mode='taxi',meetingDay='hoy';
 let userLat=null,userLon=null,userAddr='';
 let destLat=null,destLon=null,destName='';
@@ -416,6 +439,13 @@ let plan=null; // resultado del último cálculo
 let tickTimer=null;
 let notified={prep:false,uber:false,go:false};
 let profile={name:'',buffer:10,esperaTaxi:7,trafficModel:'bestguess',onboarded:false};
+let agenda={enabled:false,days:{}};
+
+const DAY_KEYS=['lunes','martes','miercoles','jueves','viernes','sabado','domingo'];
+const DAY_LABELS={lunes:'Lunes',martes:'Martes',miercoles:'Miércoles',jueves:'Jueves',viernes:'Viernes',sabado:'Sábado',domingo:'Domingo'};
+const JS_DAY_TO_KEY=['domingo','lunes','martes','miercoles','jueves','viernes','sabado']; // Date.getDay(): 0=domingo
+function todayKey(){return JS_DAY_TO_KEY[new Date().getDay()]}
+function emptyAgendaDay(){return {active:false,hora:'',destino:'',modo:'taxi'}}
 
 const DEFAULT_TASKS=[
   {name:'Ducharme',min:15},
@@ -446,6 +476,8 @@ function openProfile(first){
     ?'Cuéntame tu nombre y ajusta estos tiempos a tu ritmo real — los puedes cambiar cuando quieras tocando tu perfil.'
     :'Estos ajustes son tuyos — se aplican a todas tus reuniones.';
   document.getElementById('profile-close-btn').style.display=first?'none':'flex';
+  syncAgendaToggleUI();
+  renderAgendaDays();
   document.getElementById('profile-overlay').classList.add('show');
 }
 function closeProfile(){
@@ -461,6 +493,53 @@ function saveProfile(){
   saveProfileToDisk();
   updateGreeting();
   document.getElementById('profile-overlay').classList.remove('show');
+}
+
+// ---------- Agenda semanal (opcional: destino/hora/modo por día, en Perfil) ----------
+function loadAgenda(){
+  try{agenda={...agenda,...JSON.parse(localStorage.getItem(AK)||'{}')}}catch{}
+  if(!agenda.days)agenda.days={};
+  DAY_KEYS.forEach(k=>{if(!agenda.days[k])agenda.days[k]=emptyAgendaDay()});
+}
+function saveAgenda(){try{localStorage.setItem(AK,JSON.stringify(agenda))}catch{}}
+function syncAgendaToggleUI(){
+  document.getElementById('agenda-on').classList.toggle('active',agenda.enabled);
+  document.getElementById('agenda-off').classList.toggle('active',!agenda.enabled);
+}
+function setAgendaEnabled(v){
+  agenda.enabled=v;
+  syncAgendaToggleUI();
+  saveAgenda();
+}
+function toggleAgendaDay(day){
+  agenda.days[day].active=!agenda.days[day].active;
+  renderAgendaDays();
+  saveAgenda();
+}
+function setAgendaField(day,field,val){
+  agenda.days[day][field]=val;
+  if(field==='modo')renderAgendaDays();
+  saveAgenda();
+}
+function renderAgendaDays(){
+  const box=document.getElementById('agenda-days');
+  box.innerHTML=DAY_KEYS.map(k=>{
+    const d=agenda.days[k];
+    const modoBtn=(val,label)=>`<button class="toggle-opt tone-blue ${d.modo===val?'active':''}" onclick="setAgendaField('${k}','modo','${val}')">${label}</button>`;
+    return `<div class="agenda-day-row">
+      <div class="agenda-day-head" onclick="toggleAgendaDay('${k}')">
+        <div class="cl-check ${d.active?'on':''}">${d.active?iconSvg('check',12,'var(--bg)',2.2):''}</div>
+        <div class="agenda-day-name">${DAY_LABELS[k]}</div>
+      </div>
+      ${d.active?`<div class="agenda-day-fields">
+        <input type="time" class="finput" value="${d.hora}" onchange="setAgendaField('${k}','hora',this.value)">
+        <input type="text" class="finput" placeholder="Destino" value="${escAttr(d.destino)}" onchange="setAgendaField('${k}','destino',this.value)">
+        <div class="toggle-row agenda-modo">
+          ${modoBtn('taxi','Taxi')}${modoBtn('auto','Auto')}${modoBtn('bus','Bus')}
+        </div>
+      </div>`:''}
+    </div>`;
+  }).join('');
 }
 
 // ---------- Persistencia (reunión + checklist + modo) ----------
@@ -521,24 +600,30 @@ function setOrigin(m){
   if(m==='manual')document.getElementById('origen-manual').focus();
   if(m==='gps'&&userLat===null)geolocate();
 }
+// Devuelve una Promise que resuelve cuando termina (con o sin éxito) — la usa
+// la agenda automática para esperar el GPS antes de calcular sola.
 function geolocate(){
   const nm=document.getElementById('loc-name'),sub=document.getElementById('loc-sub'),retry=document.getElementById('loc-retry');
   nm.textContent='Obteniendo ubicación...';retry.style.display='none';
-  if(!navigator.geolocation){setGeoError();return}
-  navigator.geolocation.getCurrentPosition(async pos=>{
-    userLat=pos.coords.latitude;userLon=pos.coords.longitude;nm.textContent='Identificando...';
-    try{
-      const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json`,{headers:{'User-Agent':'Apurate/1.0'}});
-      const d=await r.json(),a=d.address;
-      const barrio=a.neighbourhood||a.suburb||a.city_district||'';
-      const dist=a.city||a.town||'Lima';
-      userAddr=barrio?`${barrio}, ${dist}`:dist;
-      nm.textContent=userAddr;sub.textContent=`${userLat.toFixed(4)}, ${userLon.toFixed(4)}`;
-    }catch{userAddr=`${userLat.toFixed(4)}, ${userLon.toFixed(4)}`;nm.textContent=userAddr}
-  },err=>{
-    const msgs={1:'Permiso denegado — actívalo en ajustes',2:'No se pudo obtener GPS',3:'Tiempo agotado'};
-    setGeoError(msgs[err.code]||'Error de GPS');
-  },{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+  return new Promise(resolve=>{
+    if(!navigator.geolocation){setGeoError();resolve();return}
+    navigator.geolocation.getCurrentPosition(async pos=>{
+      userLat=pos.coords.latitude;userLon=pos.coords.longitude;nm.textContent='Identificando...';
+      try{
+        const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json`,{headers:{'User-Agent':'Apurate/1.0'}});
+        const d=await r.json(),a=d.address;
+        const barrio=a.neighbourhood||a.suburb||a.city_district||'';
+        const dist=a.city||a.town||'Lima';
+        userAddr=barrio?`${barrio}, ${dist}`:dist;
+        nm.textContent=userAddr;sub.textContent=`${userLat.toFixed(4)}, ${userLon.toFixed(4)}`;
+      }catch{userAddr=`${userLat.toFixed(4)}, ${userLon.toFixed(4)}`;nm.textContent=userAddr}
+      resolve();
+    },err=>{
+      const msgs={1:'Permiso denegado — actívalo en ajustes',2:'No se pudo obtener GPS',3:'Tiempo agotado'};
+      setGeoError(msgs[err.code]||'Error de GPS');
+      resolve();
+    },{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+  });
 }
 function setGeoError(msg){
   document.getElementById('loc-name').textContent=msg||'GPS no disponible';
@@ -546,11 +631,12 @@ function setGeoError(msg){
   document.getElementById('loc-retry').style.display='flex';
 }
 
-// ---------- Modo Auto / Taxi ----------
+// ---------- Modo Taxi / Auto / Bus ----------
 function setMode(m){
   mode=m;
   document.getElementById('mtab-taxi').classList.toggle('active',m==='taxi');
   document.getElementById('mtab-auto').classList.toggle('active',m==='auto');
+  document.getElementById('mtab-bus').classList.toggle('active',m==='bus');
   saveState();
 }
 
@@ -606,20 +692,21 @@ async function checkDestino(){
   catch{dot.className='fdot error'}
 }
 
-// ---------- Distance Matrix (con tráfico) ----------
-function getDistanceMatrix(oLat,oLon,dLat,dLon,departureDate,trafficModel){
+// ---------- Distance Matrix (con tráfico para Taxi/Auto, transit para Bus) ----------
+function getDistanceMatrix(oLat,oLon,dLat,dLon,departureDate,trafficModel,isTransit){
   const viaGoogle=new Promise((resolve,reject)=>{
     try{
       const svc=new google.maps.DistanceMatrixService();
       const req={
         origins:[new google.maps.LatLng(oLat,oLon)],
         destinations:[new google.maps.LatLng(dLat,dLon)],
-        travelMode:google.maps.TravelMode.DRIVING,
+        travelMode: isTransit?google.maps.TravelMode.TRANSIT:google.maps.TravelMode.DRIVING,
         region:'PE'
       };
-      if(departureDate){
+      if(!isTransit&&departureDate){
         // google.maps.TrafficModel espera los valores en minúscula tal cual:
         // 'bestguess' | 'pessimistic' | 'optimistic' (nuestro <select> ya usa esos mismos valores).
+        // TRANSIT no acepta drivingOptions -- el tiempo de bus ya incluye caminata + espera + viaje.
         req.drivingOptions={
           departureTime:departureDate,
           trafficModel:['bestguess','pessimistic','optimistic'].includes(trafficModel)?trafficModel:'bestguess'
@@ -687,19 +774,23 @@ async function calcular(){
     const trafficModel=profile.trafficModel;
     const arrivalTime=addMin(meetingTime,-bufferMin);
 
-    // Paso 1: duración base (sin tráfico) para estimar hora de salida aproximada
-    let matrix=await getDistanceMatrix(oLat,oLon,destLat,destLon,null,null);
+    const isBus=mode==='bus';
+    // Paso 1: duración base para estimar hora de salida aproximada
+    let matrix=await getDistanceMatrix(oLat,oLon,destLat,destLon,null,null,isBus);
     let durMin,distKm,hasTraffic=false;
     if(matrix){
       durMin=matrix.durMin;distKm=matrix.distKm;
-      // Paso 2: refinar con tráfico previsto para la hora de salida estimada
-      const guessDeparture=addMin(arrivalTime,-durMin);
-      const departureForQuery=guessDeparture<new Date()?new Date():guessDeparture;
-      const matrix2=await getDistanceMatrix(oLat,oLon,destLat,destLon,departureForQuery,trafficModel);
-      if(matrix2){durMin=matrix2.durMin;distKm=matrix2.distKm;hasTraffic=matrix2.hasTraffic}
+      // Paso 2: en Bus el tiempo de transit ya viene fijo (caminata+espera+viaje según
+      // horario), no aplica refinar con drivingOptions/tráfico como en Taxi/Auto.
+      if(!isBus){
+        const guessDeparture=addMin(arrivalTime,-durMin);
+        const departureForQuery=guessDeparture<new Date()?new Date():guessDeparture;
+        const matrix2=await getDistanceMatrix(oLat,oLon,destLat,destLon,departureForQuery,trafficModel,false);
+        if(matrix2){durMin=matrix2.durMin;distKm=matrix2.distKm;hasTraffic=matrix2.hasTraffic}
+      }
     } else {
       distKm=hav(oLat,oLon,destLat,destLon)*1.35;
-      durMin=Math.round(distKm/0.33);
+      durMin=Math.round(distKm/(isBus?0.25:0.33));
     }
 
     // El tiempo total necesario = ajustes finos (checklist + espera de taxi) + tiempo de traslado con tráfico.
@@ -719,6 +810,7 @@ async function calcular(){
     document.getElementById('hero-alistate').textContent=fmt(prepStartTime);
     const rideLabel=document.getElementById('hero-ride-label'),rideVal=document.getElementById('hero-ride');
     if(mode==='taxi'){rideLabel.textContent='Pide el taxi';rideVal.textContent=fmt(taxiRequestTime);rideVal.style.color='var(--red)'}
+    else if(mode==='bus'){rideLabel.textContent='Sales al paradero';rideVal.textContent=fmt(departureTime);rideVal.style.color='var(--green)'}
     else{rideLabel.textContent='Sales de casa';rideVal.textContent=fmt(departureTime);rideVal.style.color='var(--green)'}
     document.getElementById('hero-times').classList.add('show');
 
@@ -733,8 +825,9 @@ async function calcular(){
         msg=`Ya pasó tu hora de salida (${fmt(departureTime)}). Pide tu taxi AHORA MISMO — vas a llegar tarde, avisa en tu reunión.`;
       } else if(mode==='taxi'&&now0>=taxiRequestTime){
         msg=`Ya deberías haber pedido el taxi (era a las ${fmt(taxiRequestTime)}). Pídelo ya mismo, olvídate del checklist.`;
-      } else if(mode==='auto'&&now0>=departureTime){
-        msg=`Ya pasó tu hora de salida (${fmt(departureTime)}). Sal ahora mismo — vas a llegar tarde, avisa en tu reunión.`;
+      } else if(mode!=='taxi'&&now0>=departureTime){
+        const destinoSalida=mode==='bus'?'al paradero':'hacia tu auto';
+        msg=`Ya pasó tu hora de salida (${fmt(departureTime)}). Sal ${destinoSalida} ahora mismo — vas a llegar tarde, avisa en tu reunión.`;
       } else {
         msg=`Necesitabas empezar a alistarte hace ${humanMin(mins(prepStartTime,now0))} (a las ${fmt(prepStartTime)}). Salta lo que puedas del checklist${mode==='taxi'?' y pide tu taxi apenas estés listo':''}.`;
       }
@@ -781,18 +874,28 @@ function confirmarAviso(){
 
 function renderPlan(){
   if(!plan)return;
-  const rows=plan.mode==='taxi'?[
-    {icon:'shower',label:'Empieza a alistarte',time:plan.prepStartTime,sub:`${totalPrepMin()} min de tareas`,highlight:true},
-    {icon:'taxi',label:'Pide tu taxi / Uber',time:plan.taxiRequestTime,sub:`Llega en ~${plan.esperaTaxiMin} min`},
-    {icon:'door',label:'Sales de casa',time:plan.departureTime,sub:`Viaje: ${plan.durMin} min · ${plan.distKm.toFixed(1)} km`},
-    {icon:'pin',label:'Llegas',time:plan.arrivalTime,sub:`${plan.bufferMin} min antes de la reunión`},
-    {icon:'clock',label:'Reunión',time:plan.meetingTime,sub:plan.destAddr}
-  ]:[
-    {icon:'shower',label:'Empieza a alistarte',time:plan.prepStartTime,sub:`${totalPrepMin()} min de tareas`,highlight:true},
-    {icon:'car',label:'Sales de casa (en tu auto)',time:plan.departureTime,sub:`Viaje: ${plan.durMin} min · ${plan.distKm.toFixed(1)} km`},
+  const first={icon:'shower',label:'Empieza a alistarte',time:plan.prepStartTime,sub:`${totalPrepMin()} min de tareas`,highlight:true};
+  const last=[
     {icon:'pin',label:'Llegas',time:plan.arrivalTime,sub:`${plan.bufferMin} min antes de la reunión`},
     {icon:'clock',label:'Reunión',time:plan.meetingTime,sub:plan.destAddr}
   ];
+  const rows=plan.mode==='taxi'?[
+    first,
+    {icon:'taxi',label:'Pide tu taxi / Uber',time:plan.taxiRequestTime,sub:`Llega en ~${plan.esperaTaxiMin} min`},
+    {icon:'door',label:'Sales de casa',time:plan.departureTime,sub:`Viaje: ${plan.durMin} min · ${plan.distKm.toFixed(1)} km`},
+    ...last
+  ]:plan.mode==='bus'?[
+    first,
+    {icon:'bus',label:'Sales al paradero',time:plan.departureTime,sub:`Viaje en bus: ${plan.durMin} min`},
+    ...last
+  ]:[
+    first,
+    {icon:'car',label:'Sales de casa (en tu auto)',time:plan.departureTime,sub:`Viaje: ${plan.durMin} min · ${plan.distKm.toFixed(1)} km`},
+    ...last
+  ];
+  const badge=plan.mode==='bus'
+    ?`<span class="traffic-badge scheduled"><span class="traffic-dot"></span>según horario de buses de Google Maps</span>`
+    :`<span class="traffic-badge ${plan.hasTraffic?'live':'scheduled'}"><span class="traffic-dot"></span>${plan.hasTraffic?'con tráfico en vivo':'estimado sin tráfico en vivo'}</span>`;
   document.getElementById('timeline').innerHTML=rows.map(r=>`
     <div class="tl-row">
       <div class="tl-dotcol">
@@ -805,9 +908,7 @@ function renderPlan(){
       </div>
       <div class="tl-time">${fmt(r.time)}</div>
     </div>`).join('')+
-    `<div class="traffic-wrap">
-      <span class="traffic-badge ${plan.hasTraffic?'live':'scheduled'}"><span class="traffic-dot"></span>${plan.hasTraffic?'con tráfico en vivo':'estimado sin tráfico en vivo'}</span>
-    </div>`;
+    `<div class="traffic-wrap">${badge}</div>`;
 }
 
 // ---------- Estado en vivo (cuenta regresiva + avisos) ----------
@@ -827,10 +928,12 @@ function stagesFor(plan){
     {until:plan.meetingTime,cls:'st-road',tag:'En camino',big:`Reunión a las ${fmt(plan.meetingTime)}`},
     {until:null,cls:'st-done',tag:'En la reunión',big:'🎉 Ya deberías estar ahí'}
   ];
+  const saleTxt=plan.mode==='bus'?'Sal al paradero':'Sal de casa';
+  const saleNotify=plan.mode==='bus'?'¡Sal ya hacia el paradero!':'¡Sal ya hacia tu auto!';
   return[
     {until:plan.prepStartTime,cls:'st-wait',tag:'Todavía tranquilo',big:`Alístate a las ${fmt(plan.prepStartTime)}`},
-    {until:plan.departureTime,cls:'st-prep',tag:'¡Alístate!',big:`Sal de casa a las ${fmt(plan.departureTime)}`,notifyKey:'prep',notifyMsg:['APURATE! 🏃','Es hora de empezar a alistarte.']},
-    {until:plan.arrivalTime,cls:'st-go',tag:'¡Sal ya!',big:`Llegas a las ${fmt(plan.arrivalTime)}`,notifyKey:'go',notifyMsg:['APURATE! 🚙','¡Sal ya hacia tu auto!']},
+    {until:plan.departureTime,cls:'st-prep',tag:'¡Alístate!',big:`${saleTxt} a las ${fmt(plan.departureTime)}`,notifyKey:'prep',notifyMsg:['APURATE! 🏃','Es hora de empezar a alistarte.']},
+    {until:plan.arrivalTime,cls:'st-go',tag:'¡Sal ya!',big:`Llegas a las ${fmt(plan.arrivalTime)}`,notifyKey:'go',notifyMsg:['APURATE! 🚙',saleNotify]},
     {until:plan.meetingTime,cls:'st-road',tag:'En camino',big:`Reunión a las ${fmt(plan.meetingTime)}`},
     {until:null,cls:'st-done',tag:'En la reunión',big:'🎉 Ya deberías estar ahí'}
   ];
@@ -902,11 +1005,29 @@ function lanzarCabify(){
   setTimeout(()=>{if(Date.now()-start<2000)window.open(webURL,'_blank')},1500);
 }
 
+// ---------- Agenda semanal: auto-ejecución al abrir la app ----------
+// Si hoy tiene un día activo en la agenda, precarga ese destino/hora/modo y
+// calcula sola -- sin que nadie tenga que tocar nada. Si el origen es GPS y
+// aún no resolvió, espera a que termine antes de calcular.
+async function initAgendaAutoRun(){
+  if(!agenda.enabled)return;
+  const d=agenda.days[todayKey()];
+  if(!d||!d.active||!d.hora||!d.destino)return;
+  document.getElementById('hora-reunion').value=d.hora;
+  document.getElementById('destino').value=d.destino;
+  setDay('hoy');
+  setMode(d.modo);
+  if(originMode==='gps'&&userLat===null)await geolocate();
+  calcular();
+}
+
 // ---------- Init ----------
 paintStaticIcons();
+loadAgenda(); // antes que loadProfile(): openProfile() puede dispararse sola (onboarding) y ya usa agenda.days
 loadProfile();
 loadState();
 setOrigin('gps');
+initAgendaAutoRun();
 setInterval(()=>{document.getElementById('live-clock').textContent=fmt(new Date())},1000);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
