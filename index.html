@@ -346,7 +346,7 @@ input[type=time]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.6}
         <input type="number" id="prof-buffer" class="finput" value="10" min="0" max="60">
       </div>
       <div class="field-col">
-        <label>Espera taxi (min)</label>
+        <label>Espera movilidad (min)</label>
         <input type="number" id="prof-espera" class="finput" value="7" min="0" max="30">
       </div>
     </div>
@@ -357,6 +357,7 @@ input[type=time]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.6}
         <option value="pessimistic">Pesimista</option>
         <option value="optimistic">Optimista</option>
       </select>
+      <p class="agenda-hint">Qué tan cauteloso ser con el tráfico previsto en Taxi/Auto (Bus usa horario fijo, no aplica). Pesimista = sales más temprano, con más margen.</p>
     </div>
 
     <div class="section-row">
@@ -793,11 +794,14 @@ async function calcular(){
       durMin=Math.round(distKm/(isBus?0.25:0.33));
     }
 
-    // El tiempo total necesario = ajustes finos (checklist + espera de taxi) + tiempo de traslado con tráfico.
+    // El tiempo total necesario = ajustes finos (checklist + espera de movilidad) + tiempo de traslado con tráfico.
     // departureTime sale SIEMPRE del traslado real; el resto se resta hacia atrás desde ahí.
+    // La espera aplica a Taxi (esperas a que llegue) Y a Bus (margen por si no es puntual) —
+    // solo Auto no la necesita, porque el auto ya está esperándote.
     const departureTime=addMin(arrivalTime,-durMin);
-    const taxiRequestTime=mode==='taxi'?addMin(departureTime,-esperaTaxiMin):null;
-    const prepEndTime=mode==='taxi'?taxiRequestTime:departureTime;
+    const needsWait=mode==='taxi'||mode==='bus';
+    const taxiRequestTime=mode==='taxi'?addMin(departureTime,-esperaTaxiMin):null; // solo Taxi tiene un paso explícito de "pedir"
+    const prepEndTime=needsWait?addMin(departureTime,-esperaTaxiMin):departureTime;
     const prepStartTime=addMin(prepEndTime,-totalPrepMin());
 
     plan={mode,meetingTime,arrivalTime,departureTime,taxiRequestTime,prepStartTime,durMin,distKm,hasTraffic,bufferMin,esperaTaxiMin,
