@@ -858,6 +858,10 @@ async function calcular(){
     document.getElementById('results').classList.add('show');
     document.getElementById('results').scrollIntoView({behavior:'smooth',block:'nearest'});
     saveState();
+    // Pedir el permiso de notificaciones aquí, en TODO cálculo exitoso (no solo al
+    // confirmar el taxi) -- si no, en modo Auto/Bus o con la agenda automática nunca
+    // se pedía, y las alarmas de tick() se quedaban sonando en silencio sin avisar.
+    if('Notification' in window && Notification.permission==='default')Notification.requestPermission();
     if(!tickTimer)tickTimer=setInterval(tick,1000);
     tick();
   }catch(e){document.getElementById('err-msg-text').textContent=e.message;err.style.display='flex'}
