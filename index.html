@@ -589,7 +589,14 @@ function updateTotal(){
   const t=tasks.filter(x=>x.on).reduce((s,x)=>s+x.min,0);
   document.getElementById('cl-total-val').textContent=t+' min';
 }
-function totalPrepMin(){return tasks.filter(x=>x.on).reduce((s,x)=>s+x.min,0)}
+// excludeBreakfast: si es true, no cuenta la(s) tarea(s) de desayuno (para
+// reuniones desde las 11am -- ver isBreakfastTask()). El checklist de Perfil
+// llama totalPrepMin() sin argumento (total crudo, sin importar ninguna
+// reunión); calcular()/renderPlan() sí pasan el flag.
+function isBreakfastTask(t){return /desayun/i.test(t.name)}
+function totalPrepMin(excludeBreakfast){
+  return tasks.filter(x=>x.on&&!(excludeBreakfast&&isBreakfastTask(x))).reduce((s,x)=>s+x.min,0);
+}
 
 // ---------- Origen ----------
 function setOrigin(m){
@@ -774,6 +781,9 @@ async function calcular(){
     const esperaTaxiMin=profile.esperaTaxi;
     const trafficModel=profile.trafficModel;
     const arrivalTime=addMin(meetingTime,-bufferMin);
+    // Reunión a las 11am o más tarde: ya no hace falta el tiempo de desayuno
+    // (se asume que a esa hora ya desayunaste por tu cuenta).
+    const skipBreakfast=(meetingTime.getHours()*60+meetingTime.getMinutes())>=11*60 && tasks.some(t=>t.on&&isBreakfastTask(t));
 
     const isBus=mode==='bus';
     // Paso 1: duración base para estimar hora de salida aproximada
@@ -802,9 +812,9 @@ async function calcular(){
     const needsWait=mode==='taxi'||mode==='bus';
     const taxiRequestTime=mode==='taxi'?addMin(departureTime,-esperaTaxiMin):null; // solo Taxi tiene un paso explícito de "pedir"
     const prepEndTime=needsWait?addMin(departureTime,-esperaTaxiMin):departureTime;
-    const prepStartTime=addMin(prepEndTime,-totalPrepMin());
+    const prepStartTime=addMin(prepEndTime,-totalPrepMin(skipBreakfast));
 
-    plan={mode,meetingTime,arrivalTime,departureTime,taxiRequestTime,prepStartTime,durMin,distKm,hasTraffic,bufferMin,esperaTaxiMin,
+    plan={mode,meetingTime,arrivalTime,departureTime,taxiRequestTime,prepStartTime,durMin,distKm,hasTraffic,bufferMin,esperaTaxiMin,skipBreakfast,
       origAddr:originMode==='gps'?(userAddr||'mi ubicación'):document.getElementById('origen-manual').value,destAddr:destVal,avisoConfirmado:false};
     notified={prep:false,uber:false,go:false};
     renderPlan();
@@ -882,7 +892,7 @@ function confirmarAviso(){
 
 function renderPlan(){
   if(!plan)return;
-  const first={icon:'shower',label:'Empieza a alistarte',time:plan.prepStartTime,sub:`${totalPrepMin()} min de tareas`,highlight:true};
+  const first={icon:'shower',label:'Empieza a alistarte',time:plan.prepStartTime,sub:`${totalPrepMin(plan.skipBreakfast)} min de tareas${plan.skipBreakfast?' (sin desayuno)':''}`,highlight:true};
   const last=[
     {icon:'pin',label:'Llegas',time:plan.arrivalTime,sub:`${plan.bufferMin} min antes de la reunión`},
     {icon:'clock',label:'Reunión',time:plan.meetingTime,sub:plan.destAddr}
